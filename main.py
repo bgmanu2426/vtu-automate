@@ -8,6 +8,7 @@ import re
 import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any, AsyncIterator, Awaitable, Callable
 from urllib.parse import quote, unquote, urlparse
 
@@ -18,6 +19,43 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
+
+
+def _load_local_env_files() -> None:
+    """Load .env then .env.local if present, without overriding real OS env vars."""
+    root = Path(__file__).resolve().parent
+    merged: dict[str, str] = {}
+
+    for name in (".env", ".env.local"):
+        path = root / name
+        if not path.exists():
+            continue
+
+        for raw_line in path.read_text(encoding="utf-8").splitlines():
+            line = raw_line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+
+            key, value = line.split("=", 1)
+            key = key.strip()
+            value = value.strip()
+
+            if not key:
+                continue
+
+            if (value.startswith('"') and value.endswith('"')) or (
+                value.startswith("'") and value.endswith("'")
+            ):
+                value = value[1:-1]
+
+            merged[key] = value
+
+    for key, value in merged.items():
+        if key not in os.environ:
+            os.environ[key] = value
+
+
+_load_local_env_files()
 
 
 VTU_API_BASE_URL = os.getenv("VTU_API_BASE_URL", "").rstrip("/")
@@ -197,6 +235,25 @@ def snapshot(job: JobState) -> dict[str, Any]:
         "logs": job.logs[-50:],
         "result": job.result,
     }
+
+
+def api_base_candidates(base_url: str) -> list[str]:
+    base = base_url.rstrip("/")
+    if not base:
+        return []
+
+    candidates = [base]
+    if base.endswith("/api/v1"):
+        candidates.append(base[: -len("/v1")])
+    elif base.endswith("/api"):
+        candidates.append(f"{base}/v1")
+
+    # Keep order stable while de-duplicating.
+    ordered: list[str] = []
+    for item in candidates:
+        if item and item not in ordered:
+            ordered.append(item)
+    return ordered
 
 
 def _upstash_enabled() -> bool:
@@ -558,22 +615,64 @@ async def run_automation(
             "error": "VTU_API_BASE_URL is not configured. Set it in your environment.",
         }
 
+    base_candidates = api_base_candidates(VTU_API_BASE_URL)
+    if not base_candidates:
+        return {
+            "success": False,
+            "error": "VTU_API_BASE_URL is invalid. Set it to https://online.vtu.ac.in/api or /api/v1.",
+        }
+
     completed = 0
     skipped = 0
     session_valid = False
     duration_cache: dict[int, int] = {}
+    current_api_base = base_candidates[0]
 
     async with httpx.AsyncClient(timeout=30.0) as client:
         async def login() -> None:
-            nonlocal session_valid
-            resp = await client.post(
-                f"{VTU_API_BASE_URL}/auth/login",
-                json={"email": config.email, "password": config.password},
+            nonlocal current_api_base, session_valid
+
+            last_error: str | None = None
+            for candidate_base in base_candidates:
+                for attempt in range(3):
+                    try:
+                        resp = await client.post(
+                            f"{candidate_base}/auth/login",
+                            json={"email": config.email, "password": config.password},
+                        )
+                        resp.raise_for_status()
+                        current_api_base = candidate_base
+                        name = (resp.json().get("data") or {}).get("name", config.email)
+                        session_valid = True
+                        await on_progress("log", {"text": f"Logged in as {name}", "level": "success"})
+                        if candidate_base != base_candidates[0]:
+                            await on_progress(
+                                "log",
+                                {
+                                    "text": f"Switched API base to {candidate_base} after login failures.",
+                                    "level": "warning",
+                                },
+                            )
+                        return
+                    except httpx.HTTPStatusError as exc:
+                        status = exc.response.status_code
+                        last_error = f"{status} on {candidate_base}/auth/login"
+                        transient = status in {429, 500, 502, 503, 504}
+                        if transient and attempt < 2:
+                            await asyncio.sleep(max(runtime_config.retry_delay_ms, 0) / 1000)
+                            continue
+                        break
+                    except Exception as exc:  # noqa: BLE001
+                        last_error = str(exc)
+                        if attempt < 2:
+                            await asyncio.sleep(max(runtime_config.retry_delay_ms, 0) / 1000)
+                            continue
+                        break
+
+            raise RuntimeError(
+                "Login failed after retries across API base candidates "
+                f"{', '.join(base_candidates)}. Last error: {last_error or 'unknown error'}"
             )
-            resp.raise_for_status()
-            name = (resp.json().get("data") or {}).get("name", config.email)
-            session_valid = True
-            await on_progress("log", {"text": f"Logged in as {name}", "level": "success"})
 
         async def request(method: str, path: str, data: dict[str, Any] | None = None, retry: bool = True) -> httpx.Response:
             nonlocal session_valid
@@ -582,7 +681,7 @@ async def run_automation(
             try:
                 response = await client.request(
                     method,
-                    f"{VTU_API_BASE_URL}{path}",
+                    f"{current_api_base}{path}",
                     json=data,
                 )
                 response.raise_for_status()
@@ -593,7 +692,7 @@ async def run_automation(
                     session_valid = False
                     await login()
                     return await request(method, path, data, retry=False)
-                if retry and status in (429, 500, 503):
+                if retry and status in (429, 500, 502, 503, 504):
                     await asyncio.sleep(max(runtime_config.retry_delay_ms, 0) / 1000)
                     return await request(method, path, data, retry=False)
                 raise

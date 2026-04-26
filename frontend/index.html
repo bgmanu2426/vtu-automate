@@ -4,42 +4,46 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>VTU Autopilot</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ["Manrope", "sans-serif"],
+              mono: ["JetBrains Mono", "monospace"],
+            },
+            colors: {
+              night: "#05070f",
+              panel: "rgba(10,15,32,0.78)",
+              line: "rgba(147,167,225,0.28)",
+            },
+            boxShadow: {
+              glow: "0 18px 70px rgba(0, 0, 0, 0.5)",
+            },
+            keyframes: {
+              rise: {
+                "0%": { opacity: "0", transform: "translateY(14px)" },
+                "100%": { opacity: "1", transform: "translateY(0)" },
+              },
+            },
+            animation: {
+              rise: "rise 700ms ease both",
+            },
+          },
+        },
+      };
+    </script>
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
       @import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=JetBrains+Mono:wght@400;600&display=swap");
 
-      :root {
-        --bg-a: #05070f;
-        --bg-b: #0d1022;
-        --panel: rgba(10, 15, 32, 0.74);
-        --line: rgba(147, 167, 225, 0.26);
-        --text: #e9f0ff;
-        --muted: #9fb1d9;
-        --cyan: #26e8ff;
-        --pink: #ff49d8;
-        --lime: #88ffb3;
-        --warn: #ffd56a;
-        --bad: #ff7d97;
-        --shadow: 0 18px 70px rgba(0, 0, 0, 0.5);
-      }
-
-      * {
-        box-sizing: border-box;
-      }
-
-      html,
       body {
-        margin: 0;
-        min-height: 100%;
-      }
-
-      body {
-        color: var(--text);
-        font-family: "Manrope", "Segoe UI", sans-serif;
         background:
           radial-gradient(circle at 8% 10%, rgba(38, 232, 255, 0.16), transparent 36%),
           radial-gradient(circle at 92% 16%, rgba(255, 73, 216, 0.18), transparent 30%),
           radial-gradient(circle at 84% 86%, rgba(100, 84, 255, 0.22), transparent 34%),
-          linear-gradient(145deg, var(--bg-a), var(--bg-b));
+          linear-gradient(145deg, #05070f, #0d1022);
       }
 
       .noise {
@@ -56,476 +60,309 @@
         );
       }
 
-      .wrap {
-        width: min(1120px, 100% - 30px);
-        margin: 22px auto 34px;
-        position: relative;
-        z-index: 1;
-      }
-
-      .card {
-        border-radius: 18px;
-        border: 1px solid var(--line);
-        background: var(--panel);
-        box-shadow: var(--shadow);
-        backdrop-filter: blur(8px);
-      }
-
-      .topbar {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        padding: 14px 16px;
-      }
-
-      .brand {
-        font-weight: 800;
-        letter-spacing: 0.02em;
-      }
-
-      .links {
-        display: flex;
-        gap: 10px;
-        flex-wrap: wrap;
-      }
-
-      .chip {
-        border: 1px solid var(--line);
-        background: rgba(3, 8, 23, 0.7);
-        color: #d9e6ff;
-        border-radius: 999px;
-        padding: 7px 12px;
-        font-size: 0.82rem;
-        text-decoration: none;
-      }
-
-      .hero {
-        margin-top: 12px;
-        padding: 24px;
-        animation: rise 600ms ease both;
-      }
-
-      .hero h1 {
-        margin: 0;
-        font-size: clamp(1.8rem, 5vw, 3.2rem);
-        line-height: 1.06;
-        letter-spacing: -0.02em;
-      }
-
-      .hero p {
-        margin: 12px 0 0;
-        max-width: 760px;
-        color: var(--muted);
-        font-size: 1.04rem;
-      }
-
-      .cta {
-        margin-top: 18px;
-        display: flex;
-        gap: 10px;
-        flex-wrap: wrap;
-      }
-
-      .btn {
-        border: 0;
-        border-radius: 12px;
-        padding: 11px 15px;
-        font: 800 0.9rem/1 "Manrope", sans-serif;
-        cursor: pointer;
-        transition: transform 180ms ease, filter 180ms ease;
-      }
-
-      .btn:hover {
-        transform: translateY(-1px);
-        filter: brightness(1.08);
-      }
-
-      .btn-main {
-        color: #00111d;
-        background: linear-gradient(100deg, var(--cyan), #7affde);
-      }
-
-      .btn-alt {
-        color: #fff;
-        background: linear-gradient(100deg, #7049ff, var(--pink));
-      }
-
-      .section {
-        margin-top: 14px;
-        padding: 18px;
-        animation: rise 760ms ease both;
-      }
-
-      .section-title {
-        margin: 0;
-        font-size: 1.35rem;
-      }
-
-      .section-sub {
-        margin: 6px 0 0;
-        color: var(--muted);
-      }
-
-      .steps {
-        margin-top: 12px;
-        display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 10px;
-      }
-
-      .step {
-        border: 1px solid var(--line);
-        border-radius: 14px;
-        padding: 12px;
-        background: rgba(3, 8, 24, 0.64);
-      }
-
-      .step h3 {
-        margin: 0;
-        font-size: 0.95rem;
-      }
-
-      .step p {
-        margin: 8px 0 0;
-        color: #bdd0f5;
-        font-size: 0.9rem;
-      }
-
-      .launch-grid {
-        margin-top: 12px;
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 12px;
-      }
-
-      label {
-        display: block;
-        margin: 10px 0 6px;
-        font-size: 0.79rem;
-        letter-spacing: 0.07em;
-        color: #c4d7ff;
-        text-transform: uppercase;
-      }
-
-      input {
-        width: 100%;
-        border: 1px solid rgba(147, 167, 225, 0.4);
-        border-radius: 12px;
-        background: rgba(2, 7, 20, 0.72);
-        color: #edf2ff;
-        padding: 11px 12px;
-        font: inherit;
-      }
-
-      input:focus {
-        outline: none;
-        border-color: rgba(38, 232, 255, 0.7);
-        box-shadow: 0 0 0 3px rgba(38, 232, 255, 0.13);
-      }
-
-      .split {
-        display: flex;
-        gap: 10px;
-      }
-
-      .actions {
-        margin-top: 14px;
-        display: flex;
-        gap: 10px;
-        flex-wrap: wrap;
-      }
-
-      .job-id {
-        min-height: 20px;
-        margin: 10px 0 0;
-        color: #89e9ff;
-      }
-
-      .tips {
-        margin: 0;
-        padding-left: 18px;
-        color: #c1d3f6;
-      }
-
-      .tips li {
-        margin: 7px 0;
-      }
-
-      .status-head {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 10px;
-        flex-wrap: wrap;
-      }
-
-      .pill {
-        border: 1px solid var(--line);
-        border-radius: 999px;
-        background: rgba(4, 10, 26, 0.8);
-        padding: 6px 10px;
-        font-size: 0.82rem;
-      }
-
-      .progress {
-        margin: 12px 0;
-      }
-
-      .bar {
-        width: 100%;
-        height: 14px;
-        border-radius: 999px;
-        overflow: hidden;
-        border: 1px solid var(--line);
-        background: rgba(3, 8, 23, 0.9);
-      }
-
-      .bar-fill {
-        width: 0%;
-        height: 100%;
-        background: linear-gradient(90deg, var(--cyan), var(--pink));
-        transition: width 320ms ease;
-      }
-
-      .metrics {
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
-      }
-
-      .terminal {
-        margin-top: 10px;
-        min-height: 240px;
-        max-height: 390px;
-        overflow: auto;
-        border-radius: 14px;
-        border: 1px solid rgba(147, 167, 225, 0.38);
-        background: rgba(1, 5, 16, 0.94);
-        padding: 10px;
-        font: 500 0.82rem/1.55 "JetBrains Mono", monospace;
-      }
-
       .ok {
-        color: var(--lime);
+        color: #88ffb3;
       }
 
       .warn {
-        color: var(--warn);
+        color: #ffd56a;
       }
 
       .bad {
-        color: var(--bad);
-      }
-
-      .run-local {
-        margin-top: 12px;
-      }
-
-      .cmd {
-        margin-top: 8px;
-        border: 1px solid var(--line);
-        border-radius: 12px;
-        background: rgba(2, 6, 18, 0.78);
-        padding: 10px;
-        font: 500 0.83rem/1.5 "JetBrains Mono", monospace;
-        color: #d8e6ff;
-      }
-
-      footer {
-        margin-top: 14px;
-        padding: 14px 16px;
-        color: #bdd0f4;
-        animation: rise 880ms ease both;
-      }
-
-      footer a {
-        color: #82e7ff;
-        text-decoration: none;
-      }
-
-      footer a:hover {
-        text-decoration: underline;
-      }
-
-      @keyframes rise {
-        from {
-          opacity: 0;
-          transform: translateY(14px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-
-      @media (max-width: 980px) {
-        .steps {
-          grid-template-columns: 1fr 1fr;
-        }
-
-        .launch-grid {
-          grid-template-columns: 1fr;
-        }
-      }
-
-      @media (max-width: 560px) {
-        .wrap {
-          width: min(1120px, 100% - 18px);
-        }
-
-        .hero,
-        .section,
-        .topbar,
-        footer {
-          padding: 14px;
-        }
-
-        .steps {
-          grid-template-columns: 1fr;
-        }
-
-        .split,
-        .actions,
-        .cta {
-          flex-direction: column;
-        }
-
-        .btn {
-          width: 100%;
-        }
+        color: #ff7d97;
       }
     </style>
   </head>
-  <body>
+  <body class="text-slate-100 font-sans">
     <div class="noise"></div>
-    <main class="wrap">
-      <header class="card topbar">
-        <div class="brand">VTU Autopilot</div>
-        <nav class="links">
-          <a class="chip" href="#launch">Engage Autopilot</a>
-          <a class="chip" href="https://lnbg.in" target="_blank" rel="noopener noreferrer">Website</a>
-          <a class="chip" href="https://github.vom/bgmanu2426" target="_blank" rel="noopener noreferrer">GitHub</a>
-        </nav>
+    <main class="relative z-10 mx-auto my-6 w-[min(1120px,calc(100%-24px))]">
+      <header class="animate-rise rounded-2xl border border-line bg-panel px-4 py-4 shadow-glow backdrop-blur md:px-5">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div class="flex items-center gap-2 text-sm font-extrabold tracking-wide text-slate-100">
+            <i data-lucide="layers-3" class="h-4 w-4 text-cyan-300"></i>
+            VTU Autopilot
+          </div>
+          <nav class="flex flex-wrap gap-2">
+            <a
+              class="inline-flex items-center gap-2 rounded-full border border-amber-400/40 bg-amber-300/10 px-3 py-1.5 text-xs font-bold text-amber-200 transition hover:bg-amber-300/20"
+              href="https://github.com/bgmanu2426/vtu-automate"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <i data-lucide="star" class="h-3.5 w-3.5"></i>
+              Star the repo
+            </a>
+            <a
+              class="rounded-full border border-line bg-slate-900/60 px-3 py-1.5 text-xs text-slate-200 transition hover:bg-slate-800/70"
+              href="https://lnbg.in"
+              target="_blank"
+              rel="noopener noreferrer"
+              >Website</a
+            >
+          </nav>
+        </div>
       </header>
 
-      <section class="card hero">
-        <h1>Auto-complete VTU lectures with live queue tracking.</h1>
-        <p>
+      <section class="mt-3 animate-rise rounded-2xl border border-line bg-panel p-6 shadow-glow backdrop-blur">
+        <h1 class="text-4xl font-extrabold tracking-tight text-indigo-300 md:text-6xl">VTU Autopilot</h1>
+        <p class="mt-3 max-w-3xl text-base text-slate-300 md:text-lg">
           Enter your VTU login, paste the course link or slug, and watch real-time progress in a terminal-style stream.
           Credentials are used only for the active run and cleared once done.
         </p>
-        <div class="cta">
-          <a href="#launch"><button class="btn btn-main" type="button">Engage Autopilot</button></a>
-          <a href="#process"><button class="btn btn-alt" type="button">See Process</button></a>
+        <div class="mt-5 flex flex-wrap gap-2">
+          <a
+            href="https://github.com/bgmanu2426/vtu-automate"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-amber-300 to-yellow-400 px-4 py-2 text-sm font-extrabold text-slate-900 transition hover:brightness-110"
+          >
+            <i data-lucide="star" class="h-4 w-4"></i>
+            Start the repo
+          </a>
+          <a
+            href="#process"
+            class="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-pink-500 px-4 py-2 text-sm font-bold text-white transition hover:brightness-110"
+          >
+            <i data-lucide="sparkles" class="h-4 w-4"></i>
+            See process
+          </a>
         </div>
       </section>
 
-      <section id="process" class="card section">
-        <h2 class="section-title">Four steps to freedom</h2>
-        <p class="section-sub">VTU made a portal. We made a bypass.</p>
-        <div class="steps">
-          <article class="step">
-            <h3>Enter credentials</h3>
-            <p>Use your online.vtu.ac.in account credentials.</p>
+      <section id="process" class="mt-3 animate-rise rounded-2xl border border-line bg-panel p-5 shadow-glow backdrop-blur">
+        <p class="text-xs font-bold uppercase tracking-[0.2em] text-cyan-300">The process</p>
+        <h2 class="mt-1 text-3xl font-extrabold">Follow the steps to see magic</h2>
+        <p class="mt-2 text-slate-300">VTU made a portal. We made a bypass.</p>
+        <div class="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+          <article class="rounded-xl border border-line bg-slate-950/40 p-4">
+            <div class="mb-3 inline-flex rounded-lg bg-cyan-500/20 p-2 text-cyan-300">
+              <i data-lucide="lock" class="h-4 w-4"></i>
+            </div>
+            <h3 class="font-bold">Enter credentials</h3>
+            <p class="mt-2 text-sm text-slate-300">Use your VTU online portal login. Same ones you use at online.vtu.ac.in.</p>
           </article>
-          <article class="step">
-            <h3>Pick your course</h3>
-            <p>Paste full learning URL or the slug only.</p>
+          <article class="rounded-xl border border-line bg-slate-950/40 p-4">
+            <div class="mb-3 inline-flex rounded-lg bg-indigo-500/20 p-2 text-indigo-300">
+              <i data-lucide="link" class="h-4 w-4"></i>
+            </div>
+            <h3 class="font-bold">Pick your course</h3>
+            <p class="mt-2 text-sm text-slate-300">Paste the course slug from the URL. The app can also extract it from full link.</p>
           </article>
-          <article class="step">
-            <h3>Watch the magic</h3>
-            <p>Live logs and queue updates stream instantly.</p>
-          </article>
-          <article class="step">
-            <h3>Touch grass</h3>
-            <p>The queue runs while you do anything else.</p>
+          <article class="rounded-xl border border-line bg-slate-950/40 p-4">
+            <div class="mb-3 inline-flex rounded-lg bg-sky-500/20 p-2 text-sky-300">
+              <i data-lucide="activity" class="h-4 w-4"></i>
+            </div>
+            <h3 class="font-bold">Watch the magic</h3>
+            <p class="mt-2 text-sm text-slate-300">Real-time progress in your browser. Queue updates and logs stream live.</p>
           </article>
         </div>
       </section>
 
-      <section id="launch" class="launch-grid">
-        <article class="card section">
-          <h2 class="section-title">Engage Autopilot</h2>
-          <p class="section-sub">Before launch, read the quick checks below.</p>
+      <section id="launch" class="mt-3 grid gap-3 lg:grid-cols-2">
+        <article class="animate-rise rounded-2xl border border-line bg-panel p-5 shadow-glow backdrop-blur">
+          <p class="text-xs font-bold uppercase tracking-[0.2em] text-cyan-300">Launch</p>
+          <h2 class="mt-1 text-3xl font-extrabold">Start automation</h2>
+          <p class="mt-2 text-slate-300">Credentials are wiped from memory the moment your job completes.</p>
 
-          <label for="email">VTU Online Email</label>
-          <input id="email" type="email" placeholder="you@example.com" autocomplete="email" />
+          <label for="email" class="mt-4 block text-xs font-semibold uppercase tracking-[0.14em] text-slate-300"
+            >VTU Online Email</label
+          >
+          <input
+            id="email"
+            type="email"
+            placeholder="you@example.com"
+            autocomplete="email"
+            class="mt-1 w-full rounded-xl border border-line bg-slate-950/60 px-3 py-2.5 text-slate-100 outline-none transition focus:border-cyan-300"
+          />
 
-          <label for="password">Password</label>
-          <input id="password" type="password" placeholder="Your VTU password" autocomplete="current-password" />
+          <label
+            for="password"
+            class="mt-3 block text-xs font-semibold uppercase tracking-[0.14em] text-slate-300"
+            >Password</label
+          >
+          <div class="relative mt-1">
+            <input
+              id="password"
+              type="password"
+              placeholder="Your VTU password"
+              autocomplete="current-password"
+              class="w-full rounded-xl border border-line bg-slate-950/60 px-3 py-2.5 pr-12 text-slate-100 outline-none transition focus:border-cyan-300"
+            />
+            <button
+              id="toggle-password"
+              type="button"
+              class="absolute right-2 top-1/2 inline-flex -translate-y-1/2 items-center justify-center rounded-md border border-line bg-slate-900/80 p-1.5 text-slate-200 transition hover:bg-slate-800"
+              aria-label="Show password"
+            >
+              <span id="eye-open" class="inline-flex">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-4 w-4">
+                  <path d="M2.06 12.34a1 1 0 0 1 0-.68C3.42 8.49 6.45 6 12 6s8.58 2.49 9.94 5.66a1 1 0 0 1 0 .68C20.58 15.51 17.55 18 12 18s-8.58-2.49-9.94-5.66z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+              </span>
+              <span id="eye-off" class="hidden">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-4 w-4">
+                  <path d="M3 3l18 18"/>
+                  <path d="M10.58 10.59A2 2 0 0 0 12 14a2 2 0 0 0 1.41-.58"/>
+                  <path d="M9.88 5.09A10.94 10.94 0 0 1 12 5c5.05 0 8.12 2.83 9.53 6a1.7 1.7 0 0 1 0 2c-.67 1.5-1.82 3.05-3.62 4.2"/>
+                  <path d="M6.61 6.61C4.62 7.85 3.35 9.6 2.47 11a1.7 1.7 0 0 0 0 2C3.88 16.17 6.95 19 12 19a11.3 11.3 0 0 0 4.42-.82"/>
+                </svg>
+              </span>
+            </button>
+          </div>
 
-          <label for="course">Course Link or Slug</label>
+          <label for="course" class="mt-3 block text-xs font-semibold uppercase tracking-[0.14em] text-slate-300"
+            >Course Link Or Slug</label
+          >
           <input
             id="course"
             type="text"
             placeholder="https://online.vtu.ac.in/student/learning/1-fiber-optic-communication-technology"
+            class="mt-1 w-full rounded-xl border border-line bg-slate-950/60 px-3 py-2.5 text-slate-100 outline-none transition focus:border-cyan-300"
           />
 
-          <div class="split">
-            <div style="flex: 1">
-              <label for="batch-size">Batch Size</label>
-              <input id="batch-size" type="number" min="1" max="50" value="10" />
-            </div>
-            <div style="flex: 1">
-              <label for="max-attempts">Max Attempts</label>
-              <input id="max-attempts" type="number" min="1" max="500" value="50" />
-            </div>
+          <div class="mt-4 flex flex-wrap gap-2">
+            <button
+              class="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-cyan-300 to-emerald-300 px-4 py-2 text-sm font-extrabold text-slate-900 transition hover:brightness-110"
+              id="submit"
+              type="button"
+            >
+              <i data-lucide="rocket" class="h-4 w-4"></i>
+              Start run
+            </button>
           </div>
+          <p class="mt-3 text-sm text-cyan-200">
+            A course can take up to 20 mins to complete. Until then, sit and relax.
+          </p>
 
-          <div class="actions">
-            <button class="btn btn-main" id="submit" type="button">Engage Autopilot</button>
-            <button class="btn btn-alt" id="track" type="button">Track Existing Job</button>
+          <label for="track-id" class="mt-3 block text-xs font-semibold uppercase tracking-[0.14em] text-slate-300"
+            >Existing Job ID</label
+          >
+          <input
+            id="track-id"
+            type="text"
+            placeholder="Paste Job UUID to reconnect"
+            class="mt-1 w-full rounded-xl border border-line bg-slate-950/60 px-3 py-2.5 text-slate-100 outline-none transition focus:border-cyan-300"
+          />
+          <div class="mt-3">
+            <button
+              class="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-pink-500 px-4 py-2 text-sm font-bold text-white transition hover:brightness-110"
+              id="track"
+              type="button"
+            >
+              <i data-lucide="search" class="h-4 w-4"></i>
+              Track existing job
+            </button>
           </div>
-
-          <label for="track-id">Existing Job ID</label>
-          <input id="track-id" type="text" placeholder="Paste Job UUID to reconnect" />
-          <p class="job-id" id="job-id"></p>
+          <div class="mt-2 flex flex-wrap items-center gap-2">
+            <p class="min-h-5 text-cyan-300" id="job-id"></p>
+            <button
+              id="copy-job-id"
+              type="button"
+              class="hidden inline-flex items-center gap-1 rounded-lg border border-cyan-400/40 bg-cyan-300/10 px-2.5 py-1 text-xs font-semibold text-cyan-200 transition hover:bg-cyan-300/20"
+            >
+              <i data-lucide="copy" class="h-3.5 w-3.5"></i>
+              Copy Job ID
+            </button>
+          </div>
         </article>
 
-        <article class="card section">
-          <h2 class="section-title">Before You Launch</h2>
-          <ul class="tips">
-            <li>Use your online.vtu.ac.in login, not university portal credentials.</li>
-            <li>Course slug is extracted automatically if you paste the full learning URL.</li>
-            <li>You will get a Job ID - save it to reconnect if you close the tab.</li>
-            <li>Your password is never stored and is wiped after completion.</li>
-            <li>Jobs run in queue order when traffic is high.</li>
-          </ul>
-        </article>
+        <div class="space-y-3">
+          <article class="animate-rise rounded-2xl border border-line bg-panel p-5 shadow-glow backdrop-blur">
+            <h2 class="flex items-center gap-2 text-2xl font-extrabold">
+              <i data-lucide="info" class="h-5 w-5 text-cyan-300"></i>
+              Before you launch
+            </h2>
+            <ul class="mt-4 space-y-3 text-slate-300">
+              <li class="flex items-start gap-2">
+                <i data-lucide="check" class="mt-0.5 h-4 w-4 text-emerald-300"></i>
+                <span>Use your <strong>online.vtu.ac.in</strong> login, not your university portal credentials.</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <i data-lucide="check" class="mt-0.5 h-4 w-4 text-emerald-300"></i>
+                <span>The course slug is extracted from full URL automatically.</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <i data-lucide="check" class="mt-0.5 h-4 w-4 text-emerald-300"></i>
+                <span>You will get a <strong>Job ID</strong> - save it to reconnect if you close the tab.</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <i data-lucide="check" class="mt-0.5 h-4 w-4 text-emerald-300"></i>
+                <span>Your password is <strong>never stored</strong> and wiped from memory on completion.</span>
+              </li>
+            </ul>
+          </article>
+
+          <article class="animate-rise rounded-2xl border border-cyan-400/30 bg-slate-950/50 p-5 shadow-glow backdrop-blur">
+            <h2 class="flex items-center gap-2 text-2xl font-extrabold text-cyan-200">
+              <i data-lucide="activity" class="h-5 w-5 text-cyan-300"></i>
+              Queue system
+            </h2>
+            <ul class="mt-4 space-y-3 text-slate-300">
+              <li class="flex items-start gap-2">
+                <i data-lucide="clock-3" class="mt-0.5 h-4 w-4 text-emerald-300"></i>
+                <span>Jobs run in order. During high traffic you will see your <strong>queue position</strong>.</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <i data-lucide="plug-zap" class="mt-0.5 h-4 w-4 text-emerald-300"></i>
+                <span>Close the tab anytime - your job keeps running. Come back with Job ID to check.</span>
+              </li>
+            </ul>
+          </article>
+        </div>
       </section>
 
-      <section class="card section">
-        <div class="status-head">
-          <h2 class="section-title">Autopilot Active</h2>
-          <span class="pill" id="status-note">Realtime stream standby</span>
+      <section class="mt-3 animate-rise rounded-2xl border border-line bg-panel p-5 shadow-glow backdrop-blur">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <h2 class="text-2xl font-extrabold">Autopilot active</h2>
+          <span class="rounded-full border border-line bg-slate-950/80 px-3 py-1 text-xs" id="status-note"
+            >Realtime stream standby</span
+          >
         </div>
 
-        <div class="progress">
-          <div class="bar"><div class="bar-fill" id="bar"></div></div>
+        <div class="mt-3">
+          <div class="h-3 w-full overflow-hidden rounded-full border border-line bg-slate-950/80">
+            <div class="h-full w-0 bg-gradient-to-r from-cyan-300 to-pink-400 transition-all duration-300" id="bar"></div>
+          </div>
         </div>
 
-        <div class="metrics">
-          <span class="pill" id="state">State: idle</span>
-          <span class="pill" id="queue">Queue: 0</span>
-          <span class="pill" id="processed">Processed: 0/0</span>
+        <div class="mt-3 flex flex-wrap gap-2">
+          <span class="rounded-full border border-line bg-slate-950/80 px-3 py-1 text-xs" id="state">State: idle</span>
+          <span class="rounded-full border border-line bg-slate-950/80 px-3 py-1 text-xs" id="queue">Queue: 0</span>
+          <span class="rounded-full border border-line bg-slate-950/80 px-3 py-1 text-xs" id="processed"
+            >Processed: 0/0</span
+          >
         </div>
 
-        <div class="terminal" id="log"></div>
+        <div
+          class="mt-3 min-h-[240px] max-h-[390px] overflow-auto rounded-xl border border-line bg-slate-950/90 p-3 font-mono text-[0.82rem] leading-6"
+          id="log"
+        ></div>
       </section>
 
-      <section class="card section run-local">
-        <h2 class="section-title">Run It On Your Own Machine</h2>
-        <p class="section-sub">Three commands to run locally with your own queue and your own credentials.</p>
-        <div class="cmd">1) git clone https://github.com/vikas-bhat-d/vtu-course-automation && cd vtu-course-automation && npm install</div>
-        <div class="cmd">2) npm run serve</div>
-        <div class="cmd">3) open http://localhost:3000</div>
+      <section id="congrats-card" class="mt-3 hidden animate-rise rounded-2xl border border-emerald-400/35 bg-emerald-500/10 p-5 shadow-glow backdrop-blur">
+        <h3 class="flex items-center gap-2 text-2xl font-extrabold text-emerald-200">
+          <i data-lucide="party-popper" class="h-5 w-5"></i>
+          Congratulations!
+        </h3>
+        <p class="mt-2 text-emerald-100">All of your videos are marked completed and you are good to go.</p>
+        <button
+          id="submit-another"
+          type="button"
+          class="mt-4 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-300 to-cyan-300 px-4 py-2 text-sm font-bold text-slate-900 transition hover:brightness-110"
+        >
+          <i data-lucide="rotate-ccw" class="h-4 w-4"></i>
+          Submit another course
+        </button>
       </section>
 
-      <footer class="card">
+      <footer class="mt-3 animate-rise rounded-2xl border border-line bg-panel px-5 py-4 shadow-glow backdrop-blur">
         <div>
           Website: <a href="https://lnbg.in" target="_blank" rel="noopener noreferrer">https://lnbg.in</a>
-          | GitHub: <a href="https://github.vom/bgmanu2426" target="_blank" rel="noopener noreferrer">https://github.vom/bgmanu2426</a>
+          | GitHub:
+          <a href="https://github.com/bgmanu2426/vtu-automate" target="_blank" rel="noopener noreferrer"
+            >https://github.com/bgmanu2426/vtu-automate</a
+          >
         </div>
         <div style="margin-top: 6px">Made with love by bgmanu2426</div>
       </footer>
@@ -539,6 +376,13 @@
       const statusNoteEl = document.getElementById("status-note");
       const submitBtn = document.getElementById("submit");
       const jobIdEl = document.getElementById("job-id");
+      const copyJobBtn = document.getElementById("copy-job-id");
+      const passwordInput = document.getElementById("password");
+      const togglePasswordBtn = document.getElementById("toggle-password");
+      const eyeOpen = document.getElementById("eye-open");
+      const eyeOff = document.getElementById("eye-off");
+      const congratsCard = document.getElementById("congrats-card");
+      const submitAnotherBtn = document.getElementById("submit-another");
       const barEl = document.getElementById("bar");
 
       let stream = null;
@@ -558,12 +402,30 @@
 
       function updateStatusBadge(text, cls = "") {
         statusNoteEl.textContent = text;
-        statusNoteEl.className = "pill";
+        statusNoteEl.className = "rounded-full border border-line bg-slate-950/80 px-3 py-1 text-xs";
         if (cls) statusNoteEl.classList.add(cls);
+      }
+
+      function showCongrats(show) {
+        congratsCard.classList.toggle("hidden", !show);
+      }
+
+      function setJobId(jobId) {
+        if (!jobId) {
+          jobIdEl.textContent = "";
+          copyJobBtn.classList.add("hidden");
+          copyJobBtn.dataset.jobId = "";
+          return;
+        }
+        jobIdEl.textContent = `Job ID: ${jobId}`;
+        copyJobBtn.classList.remove("hidden");
+        copyJobBtn.dataset.jobId = jobId;
       }
 
       function openStream(jobId) {
         if (stream) stream.close();
+        let expectClose = false;
+        showCongrats(false);
 
         updateStatusBadge("Connecting...", "warn");
         line(`Connecting to ${jobId}...`, "warn");
@@ -579,11 +441,21 @@
           setProgress(data.progress || 0);
           line(`Snapshot loaded (${data.status})`, "warn");
 
+          if (data.status === "done" || data.status === "failed") {
+            expectClose = true;
+            updateStatusBadge(data.status === "done" ? "Completed" : "Failed", data.status === "done" ? "ok" : "bad");
+            showCongrats(data.status === "done" && !!(data.result && data.result.success));
+          }
+
           for (const entry of data.logs || []) {
             const type = entry.type;
             const body = entry.data || {};
             if (type === "log") line(body.text || "log");
             if (type === "phase") line(body.message || "phase", "warn");
+          }
+
+          if (expectClose && stream) {
+            stream.close();
           }
         });
 
@@ -628,22 +500,30 @@
 
         stream.addEventListener("done", (evt) => {
           const data = JSON.parse(evt.data);
+          expectClose = true;
           stateEl.textContent = "State: done";
           setProgress(100);
           updateStatusBadge("Completed", "ok");
           line(`Completed ${data.completed}, skipped ${data.skipped}, total ${data.total}`, "ok");
+          showCongrats(true);
           stream.close();
         });
 
         stream.addEventListener("failed", (evt) => {
           const data = JSON.parse(evt.data);
+          expectClose = true;
           stateEl.textContent = "State: failed";
           updateStatusBadge("Failed", "bad");
           line(data.message || "Job failed", "bad");
+          showCongrats(false);
           stream.close();
         });
 
         stream.onerror = () => {
+          if (expectClose) {
+            if (stream) stream.close();
+            return;
+          }
           updateStatusBadge("Disconnected", "bad");
           line("Connection closed or failed. Reconnect with Job ID.", "bad");
           if (stream) stream.close();
@@ -654,14 +534,12 @@
         const email = document.getElementById("email").value.trim();
         const password = document.getElementById("password").value;
         const courseSlug = document.getElementById("course").value.trim();
-        const batchSize = Number(document.getElementById("batch-size").value || "10");
-        const maxAttempts = Number(document.getElementById("max-attempts").value || "50");
 
         try {
           const res = await fetch("/api/submit", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email, password, courseSlug, batchSize, maxAttempts }),
+            body: JSON.stringify({ email, password, courseSlug }),
           });
           const data = await res.json();
           if (!res.ok) {
@@ -669,7 +547,7 @@
             return;
           }
 
-          jobIdEl.textContent = `Job ID: ${data.jobId}`;
+          setJobId(data.jobId);
           document.getElementById("track-id").value = data.jobId;
           line(data.existing ? "Attached to existing active job" : "Job submitted", "ok");
           openStream(data.jobId);
@@ -684,8 +562,49 @@
           line("Paste a job ID first.", "bad");
           return;
         }
-        jobIdEl.textContent = `Job ID: ${jobId}`;
+        setJobId(jobId);
         openStream(jobId);
+      });
+
+      togglePasswordBtn.addEventListener("click", () => {
+        const showing = passwordInput.type === "text";
+        passwordInput.type = showing ? "password" : "text";
+        eyeOpen.classList.toggle("hidden", !showing);
+        eyeOff.classList.toggle("hidden", showing);
+        togglePasswordBtn.setAttribute("aria-label", showing ? "Show password" : "Hide password");
+      });
+
+      copyJobBtn.addEventListener("click", async () => {
+        const jobId = copyJobBtn.dataset.jobId || "";
+        if (!jobId) {
+          line("No Job ID to copy yet.", "warn");
+          return;
+        }
+        try {
+          await navigator.clipboard.writeText(jobId);
+          line("Job ID copied to clipboard.", "ok");
+        } catch {
+          line("Could not copy Job ID automatically. Please copy it manually.", "warn");
+        }
+      });
+
+      submitAnotherBtn.addEventListener("click", () => {
+        if (stream) {
+          stream.close();
+          stream = null;
+        }
+
+        document.getElementById("course").value = "";
+        document.getElementById("track-id").value = "";
+        setJobId("");
+        showCongrats(false);
+        setProgress(0);
+        stateEl.textContent = "State: idle";
+        queueEl.textContent = "Queue: 0";
+        processedEl.textContent = "Processed: 0/0";
+        updateStatusBadge("Realtime stream standby");
+        line("Ready for next course. Enter details and click Start run.", "ok");
+        document.getElementById("course").focus();
       });
 
       async function loadNotification() {
@@ -711,6 +630,7 @@
 
       line("UI ready. Submit a job to begin.", "warn");
       loadNotification();
+      lucide.createIcons();
     </script>
   </body>
 </html>
