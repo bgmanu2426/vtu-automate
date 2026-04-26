@@ -1,0 +1,716 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VTU Autopilot</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=JetBrains+Mono:wght@400;600&display=swap");
+
+      :root {
+        --bg-a: #05070f;
+        --bg-b: #0d1022;
+        --panel: rgba(10, 15, 32, 0.74);
+        --line: rgba(147, 167, 225, 0.26);
+        --text: #e9f0ff;
+        --muted: #9fb1d9;
+        --cyan: #26e8ff;
+        --pink: #ff49d8;
+        --lime: #88ffb3;
+        --warn: #ffd56a;
+        --bad: #ff7d97;
+        --shadow: 0 18px 70px rgba(0, 0, 0, 0.5);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+      }
+
+      body {
+        color: var(--text);
+        font-family: "Manrope", "Segoe UI", sans-serif;
+        background:
+          radial-gradient(circle at 8% 10%, rgba(38, 232, 255, 0.16), transparent 36%),
+          radial-gradient(circle at 92% 16%, rgba(255, 73, 216, 0.18), transparent 30%),
+          radial-gradient(circle at 84% 86%, rgba(100, 84, 255, 0.22), transparent 34%),
+          linear-gradient(145deg, var(--bg-a), var(--bg-b));
+      }
+
+      .noise {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        opacity: 0.25;
+        background: repeating-linear-gradient(
+          90deg,
+          rgba(255, 255, 255, 0.03) 0,
+          rgba(255, 255, 255, 0.03) 1px,
+          transparent 1px,
+          transparent 72px
+        );
+      }
+
+      .wrap {
+        width: min(1120px, 100% - 30px);
+        margin: 22px auto 34px;
+        position: relative;
+        z-index: 1;
+      }
+
+      .card {
+        border-radius: 18px;
+        border: 1px solid var(--line);
+        background: var(--panel);
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(8px);
+      }
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 14px 16px;
+      }
+
+      .brand {
+        font-weight: 800;
+        letter-spacing: 0.02em;
+      }
+
+      .links {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .chip {
+        border: 1px solid var(--line);
+        background: rgba(3, 8, 23, 0.7);
+        color: #d9e6ff;
+        border-radius: 999px;
+        padding: 7px 12px;
+        font-size: 0.82rem;
+        text-decoration: none;
+      }
+
+      .hero {
+        margin-top: 12px;
+        padding: 24px;
+        animation: rise 600ms ease both;
+      }
+
+      .hero h1 {
+        margin: 0;
+        font-size: clamp(1.8rem, 5vw, 3.2rem);
+        line-height: 1.06;
+        letter-spacing: -0.02em;
+      }
+
+      .hero p {
+        margin: 12px 0 0;
+        max-width: 760px;
+        color: var(--muted);
+        font-size: 1.04rem;
+      }
+
+      .cta {
+        margin-top: 18px;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .btn {
+        border: 0;
+        border-radius: 12px;
+        padding: 11px 15px;
+        font: 800 0.9rem/1 "Manrope", sans-serif;
+        cursor: pointer;
+        transition: transform 180ms ease, filter 180ms ease;
+      }
+
+      .btn:hover {
+        transform: translateY(-1px);
+        filter: brightness(1.08);
+      }
+
+      .btn-main {
+        color: #00111d;
+        background: linear-gradient(100deg, var(--cyan), #7affde);
+      }
+
+      .btn-alt {
+        color: #fff;
+        background: linear-gradient(100deg, #7049ff, var(--pink));
+      }
+
+      .section {
+        margin-top: 14px;
+        padding: 18px;
+        animation: rise 760ms ease both;
+      }
+
+      .section-title {
+        margin: 0;
+        font-size: 1.35rem;
+      }
+
+      .section-sub {
+        margin: 6px 0 0;
+        color: var(--muted);
+      }
+
+      .steps {
+        margin-top: 12px;
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .step {
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 12px;
+        background: rgba(3, 8, 24, 0.64);
+      }
+
+      .step h3 {
+        margin: 0;
+        font-size: 0.95rem;
+      }
+
+      .step p {
+        margin: 8px 0 0;
+        color: #bdd0f5;
+        font-size: 0.9rem;
+      }
+
+      .launch-grid {
+        margin-top: 12px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+
+      label {
+        display: block;
+        margin: 10px 0 6px;
+        font-size: 0.79rem;
+        letter-spacing: 0.07em;
+        color: #c4d7ff;
+        text-transform: uppercase;
+      }
+
+      input {
+        width: 100%;
+        border: 1px solid rgba(147, 167, 225, 0.4);
+        border-radius: 12px;
+        background: rgba(2, 7, 20, 0.72);
+        color: #edf2ff;
+        padding: 11px 12px;
+        font: inherit;
+      }
+
+      input:focus {
+        outline: none;
+        border-color: rgba(38, 232, 255, 0.7);
+        box-shadow: 0 0 0 3px rgba(38, 232, 255, 0.13);
+      }
+
+      .split {
+        display: flex;
+        gap: 10px;
+      }
+
+      .actions {
+        margin-top: 14px;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .job-id {
+        min-height: 20px;
+        margin: 10px 0 0;
+        color: #89e9ff;
+      }
+
+      .tips {
+        margin: 0;
+        padding-left: 18px;
+        color: #c1d3f6;
+      }
+
+      .tips li {
+        margin: 7px 0;
+      }
+
+      .status-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .pill {
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: rgba(4, 10, 26, 0.8);
+        padding: 6px 10px;
+        font-size: 0.82rem;
+      }
+
+      .progress {
+        margin: 12px 0;
+      }
+
+      .bar {
+        width: 100%;
+        height: 14px;
+        border-radius: 999px;
+        overflow: hidden;
+        border: 1px solid var(--line);
+        background: rgba(3, 8, 23, 0.9);
+      }
+
+      .bar-fill {
+        width: 0%;
+        height: 100%;
+        background: linear-gradient(90deg, var(--cyan), var(--pink));
+        transition: width 320ms ease;
+      }
+
+      .metrics {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .terminal {
+        margin-top: 10px;
+        min-height: 240px;
+        max-height: 390px;
+        overflow: auto;
+        border-radius: 14px;
+        border: 1px solid rgba(147, 167, 225, 0.38);
+        background: rgba(1, 5, 16, 0.94);
+        padding: 10px;
+        font: 500 0.82rem/1.55 "JetBrains Mono", monospace;
+      }
+
+      .ok {
+        color: var(--lime);
+      }
+
+      .warn {
+        color: var(--warn);
+      }
+
+      .bad {
+        color: var(--bad);
+      }
+
+      .run-local {
+        margin-top: 12px;
+      }
+
+      .cmd {
+        margin-top: 8px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: rgba(2, 6, 18, 0.78);
+        padding: 10px;
+        font: 500 0.83rem/1.5 "JetBrains Mono", monospace;
+        color: #d8e6ff;
+      }
+
+      footer {
+        margin-top: 14px;
+        padding: 14px 16px;
+        color: #bdd0f4;
+        animation: rise 880ms ease both;
+      }
+
+      footer a {
+        color: #82e7ff;
+        text-decoration: none;
+      }
+
+      footer a:hover {
+        text-decoration: underline;
+      }
+
+      @keyframes rise {
+        from {
+          opacity: 0;
+          transform: translateY(14px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @media (max-width: 980px) {
+        .steps {
+          grid-template-columns: 1fr 1fr;
+        }
+
+        .launch-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 560px) {
+        .wrap {
+          width: min(1120px, 100% - 18px);
+        }
+
+        .hero,
+        .section,
+        .topbar,
+        footer {
+          padding: 14px;
+        }
+
+        .steps {
+          grid-template-columns: 1fr;
+        }
+
+        .split,
+        .actions,
+        .cta {
+          flex-direction: column;
+        }
+
+        .btn {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="noise"></div>
+    <main class="wrap">
+      <header class="card topbar">
+        <div class="brand">VTU Autopilot</div>
+        <nav class="links">
+          <a class="chip" href="#launch">Engage Autopilot</a>
+          <a class="chip" href="https://lnbg.in" target="_blank" rel="noopener noreferrer">Website</a>
+          <a class="chip" href="https://github.vom/bgmanu2426" target="_blank" rel="noopener noreferrer">GitHub</a>
+        </nav>
+      </header>
+
+      <section class="card hero">
+        <h1>Auto-complete VTU lectures with live queue tracking.</h1>
+        <p>
+          Enter your VTU login, paste the course link or slug, and watch real-time progress in a terminal-style stream.
+          Credentials are used only for the active run and cleared once done.
+        </p>
+        <div class="cta">
+          <a href="#launch"><button class="btn btn-main" type="button">Engage Autopilot</button></a>
+          <a href="#process"><button class="btn btn-alt" type="button">See Process</button></a>
+        </div>
+      </section>
+
+      <section id="process" class="card section">
+        <h2 class="section-title">Four steps to freedom</h2>
+        <p class="section-sub">VTU made a portal. We made a bypass.</p>
+        <div class="steps">
+          <article class="step">
+            <h3>Enter credentials</h3>
+            <p>Use your online.vtu.ac.in account credentials.</p>
+          </article>
+          <article class="step">
+            <h3>Pick your course</h3>
+            <p>Paste full learning URL or the slug only.</p>
+          </article>
+          <article class="step">
+            <h3>Watch the magic</h3>
+            <p>Live logs and queue updates stream instantly.</p>
+          </article>
+          <article class="step">
+            <h3>Touch grass</h3>
+            <p>The queue runs while you do anything else.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="launch" class="launch-grid">
+        <article class="card section">
+          <h2 class="section-title">Engage Autopilot</h2>
+          <p class="section-sub">Before launch, read the quick checks below.</p>
+
+          <label for="email">VTU Online Email</label>
+          <input id="email" type="email" placeholder="you@example.com" autocomplete="email" />
+
+          <label for="password">Password</label>
+          <input id="password" type="password" placeholder="Your VTU password" autocomplete="current-password" />
+
+          <label for="course">Course Link or Slug</label>
+          <input
+            id="course"
+            type="text"
+            placeholder="https://online.vtu.ac.in/student/learning/1-fiber-optic-communication-technology"
+          />
+
+          <div class="split">
+            <div style="flex: 1">
+              <label for="batch-size">Batch Size</label>
+              <input id="batch-size" type="number" min="1" max="50" value="10" />
+            </div>
+            <div style="flex: 1">
+              <label for="max-attempts">Max Attempts</label>
+              <input id="max-attempts" type="number" min="1" max="500" value="50" />
+            </div>
+          </div>
+
+          <div class="actions">
+            <button class="btn btn-main" id="submit" type="button">Engage Autopilot</button>
+            <button class="btn btn-alt" id="track" type="button">Track Existing Job</button>
+          </div>
+
+          <label for="track-id">Existing Job ID</label>
+          <input id="track-id" type="text" placeholder="Paste Job UUID to reconnect" />
+          <p class="job-id" id="job-id"></p>
+        </article>
+
+        <article class="card section">
+          <h2 class="section-title">Before You Launch</h2>
+          <ul class="tips">
+            <li>Use your online.vtu.ac.in login, not university portal credentials.</li>
+            <li>Course slug is extracted automatically if you paste the full learning URL.</li>
+            <li>You will get a Job ID - save it to reconnect if you close the tab.</li>
+            <li>Your password is never stored and is wiped after completion.</li>
+            <li>Jobs run in queue order when traffic is high.</li>
+          </ul>
+        </article>
+      </section>
+
+      <section class="card section">
+        <div class="status-head">
+          <h2 class="section-title">Autopilot Active</h2>
+          <span class="pill" id="status-note">Realtime stream standby</span>
+        </div>
+
+        <div class="progress">
+          <div class="bar"><div class="bar-fill" id="bar"></div></div>
+        </div>
+
+        <div class="metrics">
+          <span class="pill" id="state">State: idle</span>
+          <span class="pill" id="queue">Queue: 0</span>
+          <span class="pill" id="processed">Processed: 0/0</span>
+        </div>
+
+        <div class="terminal" id="log"></div>
+      </section>
+
+      <section class="card section run-local">
+        <h2 class="section-title">Run It On Your Own Machine</h2>
+        <p class="section-sub">Three commands to run locally with your own queue and your own credentials.</p>
+        <div class="cmd">1) git clone https://github.com/vikas-bhat-d/vtu-course-automation && cd vtu-course-automation && npm install</div>
+        <div class="cmd">2) npm run serve</div>
+        <div class="cmd">3) open http://localhost:3000</div>
+      </section>
+
+      <footer class="card">
+        <div>
+          Website: <a href="https://lnbg.in" target="_blank" rel="noopener noreferrer">https://lnbg.in</a>
+          | GitHub: <a href="https://github.vom/bgmanu2426" target="_blank" rel="noopener noreferrer">https://github.vom/bgmanu2426</a>
+        </div>
+        <div style="margin-top: 6px">Made with love by bgmanu2426</div>
+      </footer>
+    </main>
+
+    <script>
+      const logEl = document.getElementById("log");
+      const stateEl = document.getElementById("state");
+      const queueEl = document.getElementById("queue");
+      const processedEl = document.getElementById("processed");
+      const statusNoteEl = document.getElementById("status-note");
+      const submitBtn = document.getElementById("submit");
+      const jobIdEl = document.getElementById("job-id");
+      const barEl = document.getElementById("bar");
+
+      let stream = null;
+
+      function line(text, cls = "") {
+        const div = document.createElement("div");
+        if (cls) div.className = cls;
+        div.textContent = `[${new Date().toLocaleTimeString()}] ${text}`;
+        logEl.appendChild(div);
+        logEl.scrollTop = logEl.scrollHeight;
+      }
+
+      function setProgress(value) {
+        const p = Math.max(0, Math.min(100, Number(value) || 0));
+        barEl.style.width = `${p}%`;
+      }
+
+      function updateStatusBadge(text, cls = "") {
+        statusNoteEl.textContent = text;
+        statusNoteEl.className = "pill";
+        if (cls) statusNoteEl.classList.add(cls);
+      }
+
+      function openStream(jobId) {
+        if (stream) stream.close();
+
+        updateStatusBadge("Connecting...", "warn");
+        line(`Connecting to ${jobId}...`, "warn");
+        stream = new EventSource(`/api/status/${jobId}`);
+
+        stream.addEventListener("open", () => updateStatusBadge("Realtime stream connected", "ok"));
+
+        stream.addEventListener("snapshot", (evt) => {
+          const data = JSON.parse(evt.data);
+          stateEl.textContent = `State: ${data.status}`;
+          queueEl.textContent = `Queue: ${data.position || 0}`;
+          processedEl.textContent = `Processed: ${data.processed || 0}/${data.total || 0}`;
+          setProgress(data.progress || 0);
+          line(`Snapshot loaded (${data.status})`, "warn");
+
+          for (const entry of data.logs || []) {
+            const type = entry.type;
+            const body = entry.data || {};
+            if (type === "log") line(body.text || "log");
+            if (type === "phase") line(body.message || "phase", "warn");
+          }
+        });
+
+        stream.addEventListener("status", (evt) => {
+          const data = JSON.parse(evt.data);
+          stateEl.textContent = `State: ${data.status}`;
+          line(`Status changed to ${data.status}`, "warn");
+        });
+
+        stream.addEventListener("queue_pos", (evt) => {
+          const data = JSON.parse(evt.data);
+          queueEl.textContent = `Queue: ${data.position}`;
+          line(`Queue position: ${data.position}`, "warn");
+        });
+
+        stream.addEventListener("phase", (evt) => {
+          const data = JSON.parse(evt.data);
+          line(data.message || "phase", "warn");
+        });
+
+        stream.addEventListener("log", (evt) => {
+          const data = JSON.parse(evt.data);
+          line(data.text || "log", data.level === "success" ? "ok" : "");
+        });
+
+        stream.addEventListener("course_info", (evt) => {
+          const data = JSON.parse(evt.data);
+          processedEl.textContent = `Processed: 0/${data.total || 0}`;
+          line(`Course: ${data.title} (${data.total} lectures)`, "warn");
+        });
+
+        stream.addEventListener("lecture_done", (evt) => {
+          const data = JSON.parse(evt.data);
+          processedEl.textContent = `Processed: ${data.completed || 0}/${data.total || 0}`;
+          if (data.total) {
+            setProgress(Math.round(((data.completed || 0) / data.total) * 100));
+          }
+          const suffix = data.reason ? ` - ${data.reason}` : "";
+          const cls = data.status === "done" ? "ok" : data.status === "maxed" ? "bad" : "warn";
+          line(`${data.idx}/${data.total} ${data.title} -> ${data.status}${suffix}`, cls);
+        });
+
+        stream.addEventListener("done", (evt) => {
+          const data = JSON.parse(evt.data);
+          stateEl.textContent = "State: done";
+          setProgress(100);
+          updateStatusBadge("Completed", "ok");
+          line(`Completed ${data.completed}, skipped ${data.skipped}, total ${data.total}`, "ok");
+          stream.close();
+        });
+
+        stream.addEventListener("failed", (evt) => {
+          const data = JSON.parse(evt.data);
+          stateEl.textContent = "State: failed";
+          updateStatusBadge("Failed", "bad");
+          line(data.message || "Job failed", "bad");
+          stream.close();
+        });
+
+        stream.onerror = () => {
+          updateStatusBadge("Disconnected", "bad");
+          line("Connection closed or failed. Reconnect with Job ID.", "bad");
+          if (stream) stream.close();
+        };
+      }
+
+      document.getElementById("submit").addEventListener("click", async () => {
+        const email = document.getElementById("email").value.trim();
+        const password = document.getElementById("password").value;
+        const courseSlug = document.getElementById("course").value.trim();
+        const batchSize = Number(document.getElementById("batch-size").value || "10");
+        const maxAttempts = Number(document.getElementById("max-attempts").value || "50");
+
+        try {
+          const res = await fetch("/api/submit", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password, courseSlug, batchSize, maxAttempts }),
+          });
+          const data = await res.json();
+          if (!res.ok) {
+            line(data.detail || data.error || "Could not submit job", "bad");
+            return;
+          }
+
+          jobIdEl.textContent = `Job ID: ${data.jobId}`;
+          document.getElementById("track-id").value = data.jobId;
+          line(data.existing ? "Attached to existing active job" : "Job submitted", "ok");
+          openStream(data.jobId);
+        } catch (err) {
+          line(`Submit error: ${err.message}`, "bad");
+        }
+      });
+
+      document.getElementById("track").addEventListener("click", () => {
+        const jobId = document.getElementById("track-id").value.trim();
+        if (!jobId) {
+          line("Paste a job ID first.", "bad");
+          return;
+        }
+        jobIdEl.textContent = `Job ID: ${jobId}`;
+        openStream(jobId);
+      });
+
+      async function loadNotification() {
+        try {
+          const response = await fetch("/api/notification");
+          if (!response.ok) return;
+
+          const note = await response.json();
+          if (note.message) {
+            line(note.message, "warn");
+          }
+
+          if (note.disabled) {
+            submitBtn.disabled = true;
+            submitBtn.style.opacity = "0.6";
+            submitBtn.style.cursor = "not-allowed";
+            updateStatusBadge("Submissions temporarily disabled", "warn");
+          }
+        } catch {
+          line("Could not load notification metadata.", "warn");
+        }
+      }
+
+      line("UI ready. Submit a job to begin.", "warn");
+      loadNotification();
+    </script>
+  </body>
+</html>

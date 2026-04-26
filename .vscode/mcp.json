@@ -1,0 +1,8 @@
+{
+  "servers": {
+    "vtu-autopilot Docs": {
+      "type": "sse",
+      "url": "https://gitmcp.io/vikas-bhat-d/vtu-autopilot"
+    }
+  }
+}
