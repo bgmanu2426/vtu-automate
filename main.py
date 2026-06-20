@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import asyncio
-import hmac
 import json
+import logging
 import os
 import re
 import uuid
@@ -16,9 +16,11 @@ import httpx
 from fastapi import FastAPI, HTTPException
 from fastapi import Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, StreamingResponse
+from fastapi.responses import FileResponse, PlainTextResponse, Response, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
+
+logger = logging.getLogger("vtu-automate")
 
 
 def _load_local_env_files() -> None:
@@ -60,14 +62,14 @@ _load_local_env_files()
 
 VTU_API_BASE_URL = os.getenv("VTU_API_BASE_URL", "").rstrip("/")
 GITHUB_URL = os.getenv("GITHUB_URL", "https://github.com/vikas-bhat-d/vtu-course-automation")
-ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "")
+SITE_URL = os.getenv("SITE_URL", "https://vtu-automate.fastapicloud.dev").rstrip("/")
 CORS_ORIGIN = os.getenv("CORS_ORIGIN", "*")
 KV_REST_API_URL = os.getenv("KV_REST_API_URL", "").rstrip("/")
 KV_REST_API_TOKEN = os.getenv("KV_REST_API_TOKEN", "")
 STUDENTS_SEED = 40
-QUEUE_KEY = "autopilot:queue"
-JOB_PREFIX = "autopilot:job:"
-DEDUP_PREFIX = "autopilot:dedup:"
+QUEUE_KEY = "automate:queue"
+JOB_PREFIX = "automate:job:"
+DEDUP_PREFIX = "automate:dedup:"
 
 
 def env_int(*keys: str, default: int) -> int:
@@ -124,13 +126,13 @@ class SubmitPayload(BaseModel):
     maxAttempts: int | None = Field(default=None, ge=1, le=500)
 
 
-app = FastAPI(title="VTU Autopilot FastAPI")
+app = FastAPI(title="VTU Automate FastAPI")
 app.mount("/frontend", StaticFiles(directory="frontend", html=True), name="frontend")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[CORS_ORIGIN] if CORS_ORIGIN != "*" else ["*"],
     allow_credentials=False,
-    allow_methods=["GET", "POST", "PATCH", "OPTIONS"],
+    allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
 )
 
@@ -150,14 +152,6 @@ submit_rate: dict[str, list[int]] = {}
 submit_rate_lock = asyncio.Lock()
 SUBMIT_WINDOW_MS = 15 * 60 * 1000
 SUBMIT_MAX = 5
-
-CONFIG_BOUNDS: dict[str, tuple[int, int]] = {
-    "maxConcurrent": (1, 10),
-    "batchSize": (1, 50),
-    "maxAttempts": (1, 500),
-    "retryDelay": (0, 30000),
-    "requestDelay": (0, 10000),
-}
 
 
 def now_ms() -> int:
@@ -189,14 +183,18 @@ def sse_chunk(event: str, data: dict[str, Any]) -> str:
     return f"event: {event}\ndata: {json.dumps(data, ensure_ascii=False)}\n\n"
 
 
-async def push(job_id: str, event: str, data: dict[str, Any]) -> None:
-    async with state_lock:
-        targets = list(sse_connections.get(job_id, set()))
-    for conn in targets:
+def _deliver_locked(job_id: str, event: str, data: dict[str, Any]) -> None:
+    """Deliver an event to all connected SSE clients. Caller must hold state_lock."""
+    for conn in sse_connections.get(job_id, set()):
         try:
             conn.put_nowait((event, data))
         except asyncio.QueueFull:
             continue
+
+
+async def push(job_id: str, event: str, data: dict[str, Any]) -> None:
+    async with state_lock:
+        _deliver_locked(job_id, event, data)
 
 
 def sanitize_slug(slug: str) -> bool:
@@ -232,7 +230,7 @@ def snapshot(job: JobState) -> dict[str, Any]:
         "total": job.total,
         "processed": job.processed,
         "position": job.position,
-        "logs": job.logs[-50:],
+        "logs": list(job.logs),
         "result": job.result,
     }
 
@@ -282,7 +280,7 @@ async def ensure_seed() -> None:
     if not _upstash_enabled():
         return
     try:
-        await _upstash_request("set/autopilot:students/40", ["NX"])
+        await _upstash_request("set/automate:students/40", ["NX"])
     except Exception:
         return
 
@@ -297,8 +295,8 @@ async def get_stats() -> dict[str, Any]:
 
     try:
         students_raw, lectures_raw = await asyncio.gather(
-            _upstash_request("get/autopilot:students", []),
-            _upstash_request("get/autopilot:lectures", []),
+            _upstash_request("get/automate:students", []),
+            _upstash_request("get/automate:lectures", []),
         )
         students = max(int(students_raw or STUDENTS_SEED), STUDENTS_SEED)
         lectures = int(lectures_raw or 0)
@@ -321,9 +319,9 @@ async def record_job_created() -> None:
     if not _upstash_enabled():
         return
     try:
-        val = await _upstash_request("incr/autopilot:students", [])
+        val = await _upstash_request("incr/automate:students", [])
         if int(val or STUDENTS_SEED) < STUDENTS_SEED:
-            await _upstash_request("set/autopilot:students/40", [])
+            await _upstash_request("set/automate:students/40", [])
     except Exception:
         return
 
@@ -336,7 +334,7 @@ async def record_lectures_completed(count: int) -> None:
     if not _upstash_enabled():
         return
     try:
-        await _upstash_request(f"incrby/autopilot:lectures/{count}", [])
+        await _upstash_request(f"incrby/automate:lectures/{count}", [])
     except Exception:
         return
 
@@ -526,21 +524,6 @@ async def restore_queue_from_redis() -> None:
     await clear_queue()
 
 
-def _safe_compare(left: str, right: str) -> bool:
-    return hmac.compare_digest(left.encode("utf-8"), right.encode("utf-8"))
-
-
-def _validate_admin(password: str | None) -> None:
-    if not ADMIN_PASSWORD:
-        raise HTTPException(
-            status_code=503,
-            detail="Admin access is not configured (ADMIN_PASSWORD not set in env).",
-        )
-    provided = password or ""
-    if not provided or not _safe_compare(provided, ADMIN_PASSWORD):
-        raise HTTPException(status_code=401, detail="Unauthorized.")
-
-
 async def enforce_submit_rate_limit(client_ip: str) -> None:
     now = now_ms()
     cutoff = now - SUBMIT_WINDOW_MS
@@ -594,12 +577,14 @@ async def maybe_start_jobs() -> None:
 
         for queued_job_id, position in to_reposition:
             await push(queued_job_id, "queue_pos", {"position": position})
+            await update_job_fields(queued_job_id, position=position)
 
         if picked is None:
             continue
 
         picked_job_id, picked_config = picked
-        await push(picked_job_id, "status", {"status": "processing"})
+        await push(picked_job_id, "queue_pos", {"position": 0})
+        await push(picked_job_id, "status", {"status": "processing", "position": 0})
         await remove_job_from_queue(picked_job_id)
         await update_job_fields(picked_job_id, status="processing", position=0)
         asyncio.create_task(run_job(picked_job_id, picked_config))
@@ -893,50 +878,77 @@ async def run_job(job_id: str, config: JobConfig) -> None:
                 persist_fields["processed"] = job.processed
                 persist_fields["progress"] = job.progress
 
+            # Append-and-deliver in the same critical section as the snapshot
+            # read so every log event reaches each client exactly once: either
+            # live (already registered) or via its reconnect snapshot.
+            _deliver_locked(job_id, event, data)
+
         if persist_fields:
             await update_job_fields(job_id, **persist_fields)
 
-        await push(job_id, event, data)
-
-    result = await run_automation(config, on_progress)
-
     dedup_to_clear = f"{config.email.lower()}:{config.course_slug.lower()}"
-    final_fields: dict[str, Any] = {}
+    result: dict[str, Any] = {"success": False, "error": "Unexpected server error"}
+    terminal_emitted = False
 
-    async with state_lock:
-        job = jobs.get(job_id)
-        if job:
-            job.status = "done" if result.get("success") else "failed"
-            job.result = result
-            final_fields = {
-                "status": job.status,
-                "result": result,
-                "logs": job.logs,
-                "total": job.total,
-                "processed": job.processed,
-                "progress": job.progress,
-            }
+    try:
+        result = await run_automation(config, on_progress)
+
+        final_fields: dict[str, Any] = {}
+        async with state_lock:
+            job = jobs.get(job_id)
+            if job:
+                job.status = "done" if result.get("success") else "failed"
+                job.result = result
+                final_fields = {
+                    "status": job.status,
+                    "result": result,
+                    "logs": job.logs,
+                    "total": job.total,
+                    "processed": job.processed,
+                    "progress": job.progress,
+                }
+            else:
+                final_fields = {"status": "failed", "result": result}
+
+        await delete_dedup_key(dedup_to_clear)
+        await update_job_fields(job_id, **final_fields)
+
+        if result.get("success"):
+            await record_lectures_completed(int(result.get("completed", 0)))
+            done_payload = dict(result)
+            done_payload["stats"] = await get_stats()
+            await push(job_id, "done", done_payload)
         else:
-            final_fields = {"status": "failed", "result": result}
-        active_jobs = max(active_jobs - 1, 0)
-        active_job_keys.pop(dedup_to_clear, None)
+            await push(job_id, "failed", {"message": result.get("error", "Unexpected server error")})
+        terminal_emitted = True
+    except Exception:  # noqa: BLE001
+        # run_automation handles its own expected errors; reaching here means an
+        # unexpected bug. Log it and fall through to the finally, which marks the
+        # job failed and releases the queue slot.
+        logger.exception("run_job crashed for job %s", job_id)
+        result = {"success": False, "error": "Unexpected server error. Please resubmit."}
+    finally:
+        # Always release the concurrency slot and advance the queue, even if the
+        # automation raised unexpectedly, so a single failed job can never wedge
+        # the queue.
+        async with state_lock:
+            job = jobs.get(job_id)
+            if job is not None and not terminal_emitted:
+                job.status = "failed"
+                job.result = result
+            active_jobs = max(active_jobs - 1, 0)
+            active_job_keys.pop(dedup_to_clear, None)
 
-    await delete_dedup_key(dedup_to_clear)
-    await update_job_fields(job_id, **final_fields)
+        if not terminal_emitted:
+            await delete_dedup_key(dedup_to_clear)
+            await update_job_fields(job_id, status="failed", result=result)
+            await push(job_id, "failed", {"message": result.get("error", "Unexpected server error")})
 
-    if result.get("success"):
-        await record_lectures_completed(int(result.get("completed", 0)))
-        done_payload = dict(result)
-        done_payload["stats"] = await get_stats()
-        await push(job_id, "done", done_payload)
-    else:
-        await push(job_id, "failed", {"message": result.get("error", "Unexpected server error")})
+        config.password = ""
+        config.email = ""
 
-    config.password = ""
-    config.email = ""
-
-    asyncio.create_task(expire_job_later(job_id))
-    await maybe_start_jobs()
+        asyncio.create_task(expire_job_later(job_id))
+        await maybe_start_jobs()
 
 
 async def submit_job(payload: SubmitPayload) -> dict[str, Any]:
@@ -971,6 +983,7 @@ async def submit_job(payload: SubmitPayload) -> dict[str, Any]:
                 return {
                     "jobId": existing_id,
                     "position": existing_job.position,
+                    "status": existing_job.status,
                     "existing": True,
                 }
 
@@ -982,6 +995,7 @@ async def submit_job(payload: SubmitPayload) -> dict[str, Any]:
             return {
                 "jobId": redis_existing_id,
                 "position": existing_job.position,
+                "status": existing_job.status,
                 "existing": True,
             }
 
@@ -993,11 +1007,12 @@ async def submit_job(payload: SubmitPayload) -> dict[str, Any]:
                 return {
                     "jobId": existing_id,
                     "position": existing_job.position,
+                    "status": existing_job.status,
                     "existing": True,
                 }
 
         job_id = str(uuid.uuid4())
-        position = len(queue) + active_jobs + 1
+        position = len(queue) + 1
 
         jobs[job_id] = JobState(
             id=job_id,
@@ -1020,17 +1035,72 @@ async def submit_job(payload: SubmitPayload) -> dict[str, Any]:
         )
 
     asyncio.create_task(record_job_created())
-    asyncio.create_task(save_job(jobs[job_id]))
-    asyncio.create_task(enqueue_job_id(job_id))
-    asyncio.create_task(set_dedup_key(dedup_key, job_id))
+
+    # Persist + enqueue in redis BEFORE maybe_start_jobs, so if this job starts
+    # immediately the queue removal happens after the insert (not before it,
+    # which would leave a stale id in the redis queue). These are no-ops when
+    # Upstash is not configured.
+    await save_job(jobs[job_id])
+    await enqueue_job_id(job_id)
+    await set_dedup_key(dedup_key, job_id)
 
     await maybe_start_jobs()
-    return {"jobId": job_id, "position": position}
+    async with state_lock:
+        current = jobs.get(job_id)
+        current_status = current.status if current else "queued"
+        current_position = current.position if current else position
+    return {"jobId": job_id, "position": current_position, "status": current_status}
 
 
 @app.get("/")
 async def home() -> FileResponse:
     return FileResponse("frontend/index.html")
+
+
+@app.get("/favicon.svg", include_in_schema=False)
+async def favicon_svg() -> FileResponse:
+    return FileResponse("frontend/favicon.svg", media_type="image/svg+xml")
+
+
+@app.get("/favicon.ico", include_in_schema=False)
+async def favicon_ico() -> FileResponse:
+    return FileResponse("frontend/favicon.svg", media_type="image/svg+xml")
+
+
+@app.get("/og-image.png", include_in_schema=False)
+async def og_image() -> FileResponse:
+    return FileResponse("frontend/og-image.png", media_type="image/png")
+
+
+@app.get("/robots.txt", include_in_schema=False)
+async def robots_txt() -> PlainTextResponse:
+    body = (
+        "User-agent: *\n"
+        "Allow: /\n"
+        "Disallow: /api/\n"
+        "Disallow: /docs\n"
+        "Disallow: /redoc\n"
+        "Disallow: /openapi.json\n\n"
+        f"Sitemap: {SITE_URL}/sitemap.xml\n"
+    )
+    return PlainTextResponse(body)
+
+
+@app.get("/sitemap.xml", include_in_schema=False)
+async def sitemap_xml() -> Response:
+    lastmod = datetime.now(tz=timezone.utc).date().isoformat()
+    body = (
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+        "  <url>\n"
+        f"    <loc>{SITE_URL}/</loc>\n"
+        f"    <lastmod>{lastmod}</lastmod>\n"
+        "    <changefreq>weekly</changefreq>\n"
+        "    <priority>1.0</priority>\n"
+        "  </url>\n"
+        "</urlset>\n"
+    )
+    return Response(content=body, media_type="application/xml")
 
 
 @app.post("/api/submit")
@@ -1081,118 +1151,6 @@ async def api_job_status(job_id: str) -> dict[str, Any]:
     return snapshot(job)
 
 
-@app.get("/api/admin/config")
-async def api_admin_config(
-    password: str | None = None,
-    maxConcurrent: int | None = None,
-    batchSize: int | None = None,
-    maxAttempts: int | None = None,
-    retryDelay: int | None = None,
-    requestDelay: int | None = None,
-) -> dict[str, Any]:
-    _validate_admin(password)
-
-    updates: dict[str, int] = {}
-    incoming = {
-        "maxConcurrent": maxConcurrent,
-        "batchSize": batchSize,
-        "maxAttempts": maxAttempts,
-        "retryDelay": retryDelay,
-        "requestDelay": requestDelay,
-    }
-    for key, value in incoming.items():
-        if value is None:
-            continue
-        min_v, max_v = CONFIG_BOUNDS[key]
-        if value < min_v or value > max_v:
-            raise HTTPException(
-                status_code=400,
-                detail=f'"{key}" must be between {min_v} and {max_v}.',
-            )
-        updates[key] = value
-
-    if updates:
-        runtime_config.max_concurrent = updates.get("maxConcurrent", runtime_config.max_concurrent)
-        runtime_config.batch_size = updates.get("batchSize", runtime_config.batch_size)
-        runtime_config.max_attempts = updates.get("maxAttempts", runtime_config.max_attempts)
-        runtime_config.retry_delay_ms = updates.get("retryDelay", runtime_config.retry_delay_ms)
-        runtime_config.request_delay_ms = updates.get("requestDelay", runtime_config.request_delay_ms)
-
-    return {
-        "config": {
-            "maxConcurrent": runtime_config.max_concurrent,
-            "batchSize": runtime_config.batch_size,
-            "maxAttempts": runtime_config.max_attempts,
-            "retryDelay": runtime_config.retry_delay_ms,
-            "requestDelay": runtime_config.request_delay_ms,
-        },
-        "bounds": CONFIG_BOUNDS,
-    }
-
-
-@app.get("/api/admin/monitor")
-async def api_admin_monitor(password: str | None = None) -> dict[str, Any]:
-    _validate_admin(password)
-
-    async with state_lock:
-        processing: list[dict[str, str]] = []
-        for job_id, job in jobs.items():
-            if job.status != "processing":
-                continue
-            email, _, course = job.dedup_key.partition(":")
-            processing.append({"jobId": job_id, "email": email or "?", "course": course or "?"})
-
-        queued: list[dict[str, Any]] = []
-        for i, (job_id, cfg) in enumerate(queue, start=1):
-            queued.append(
-                {
-                    "num": i,
-                    "jobId": job_id,
-                    "email": cfg.email or "?",
-                    "course": cfg.course_slug or "?",
-                }
-            )
-
-    if not processing and not queued:
-        return {"message": "No active or queued jobs.", "processing": [], "queued": []}
-
-    return {
-        "activeJobs": len(processing),
-        "queueLength": len(queued),
-        "processing": processing,
-        "queued": queued,
-    }
-
-
-@app.get("/api/admin/notification")
-async def api_admin_notification(
-    password: str | None = None,
-    message: str | None = None,
-    disabled: str | None = None,
-) -> dict[str, Any]:
-    _validate_admin(password)
-
-    updates: dict[str, Any] = {}
-    if message is not None:
-        if len(message) > 500:
-            raise HTTPException(
-                status_code=400,
-                detail="Notification message must be 500 characters or less.",
-            )
-        updates["message"] = message
-
-    if disabled is not None:
-        norm = disabled.strip().lower()
-        if norm not in {"true", "false", "1", "0", "yes", "no"}:
-            raise HTTPException(status_code=400, detail='"disabled" must be true or false.')
-        updates["disabled"] = norm in {"true", "1", "yes"}
-
-    if updates:
-        notification_state.update(updates)
-
-    return {"notification": notification_state}
-
-
 @app.get("/api/status/{job_id}")
 async def api_status_stream(job_id: str) -> StreamingResponse:
     return await _stream_job(job_id)
@@ -1224,14 +1182,19 @@ async def _stream_job(job_id: str) -> StreamingResponse:
                 sse_connections[job_id] = set()
             sse_connections[job_id].add(local_queue)
             current = jobs.get(job_id)
+            # Capture the snapshot under the same lock that serializes
+            # registration and log delivery, so the replayed history and the
+            # live stream cut over without gaps or duplicates.
+            snap = snapshot(current) if current is not None else None
+            current_status = current.status if current is not None else None
 
-        if current is None:
+        if snap is None:
             yield sse_chunk("failed", {"message": "Job was removed."})
             return
 
-        yield sse_chunk("snapshot", snapshot(current))
+        yield sse_chunk("snapshot", snap)
 
-        if current.status in {"done", "failed"}:
+        if current_status in {"done", "failed"}:
             async with state_lock:
                 sse_connections.get(job_id, set()).discard(local_queue)
             return

@@ -1,636 +1,790 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>VTU Autopilot</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            fontFamily: {
-              sans: ["Manrope", "sans-serif"],
-              mono: ["JetBrains Mono", "monospace"],
-            },
-            colors: {
-              night: "#05070f",
-              panel: "rgba(10,15,32,0.78)",
-              line: "rgba(147,167,225,0.28)",
-            },
-            boxShadow: {
-              glow: "0 18px 70px rgba(0, 0, 0, 0.5)",
-            },
-            keyframes: {
-              rise: {
-                "0%": { opacity: "0", transform: "translateY(14px)" },
-                "100%": { opacity: "1", transform: "translateY(0)" },
-              },
-            },
-            animation: {
-              rise: "rise 700ms ease both",
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Primary SEO -->
+  <title>VTU Automate — Auto-complete VTU online course lectures</title>
+  <meta name="description"
+    content="VTU Automate marks your VTU online course lectures complete for you. Paste your course link, submit once, and watch every lecture finish in real time with live queue and progress." />
+  <meta name="keywords"
+    content="VTU, VTU automate, VTU online, online.vtu.ac.in, VTU course automation, VTU lecture completion, VTU course completer, auto complete VTU course, VTU progress automation" />
+  <meta name="author" content="Lakshminarayana" />
+  <meta name="robots" content="index, follow" />
+  <meta name="theme-color" content="#05070f" />
+  <link rel="canonical" href="https://vtu-automate.fastapicloud.dev/" />
+
+  <!-- Icons -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="apple-touch-icon" href="/favicon.svg" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="VTU Automate" />
+  <meta property="og:title" content="VTU Automate — Auto-complete VTU online course lectures" />
+  <meta property="og:description"
+    content="Paste your VTU course link, submit once, and watch every lecture get marked complete in real time — with live queue and progress." />
+  <meta property="og:url" content="https://vtu-automate.fastapicloud.dev/" />
+  <meta property="og:image" content="https://vtu-automate.fastapicloud.dev/og-image.png" />
+  <meta property="og:image:secure_url" content="https://vtu-automate.fastapicloud.dev/og-image.png" />
+  <meta property="og:image:type" content="image/png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="VTU Automate — submit your VTU course once and watch lectures complete in real time." />
+  <meta property="og:locale" content="en_US" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="VTU Automate — Auto-complete VTU online course lectures" />
+  <meta name="twitter:description"
+    content="Paste your VTU course link, submit once, and watch every lecture get marked complete in real time." />
+  <meta name="twitter:image" content="https://vtu-automate.fastapicloud.dev/og-image.png" />
+  <meta name="twitter:image:alt" content="VTU Automate share banner" />
+
+  <!-- Structured data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "VTU Automate",
+    "url": "https://vtu-automate.fastapicloud.dev/",
+    "description": "Marks your VTU online course lectures complete automatically. Submit your course link once and track real-time progress.",
+    "applicationCategory": "EducationApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+    "author": { "@type": "Person", "name": "Lakshminarayana", "url": "https://lnbg.in" }
+  }
+  </script>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ["Manrope", "sans-serif"],
+            mono: ["JetBrains Mono", "monospace"],
+          },
+          colors: {
+            night: "#05070f",
+            panel: "rgba(9,12,30,0.84)",
+            line: "rgba(148,163,184,0.24)",
+          },
+          boxShadow: {
+            glow: "0 18px 70px rgba(0, 0, 0, 0.5)",
+            neon: "0 24px 80px rgba(8, 145, 178, 0.24)",
+          },
+          keyframes: {
+            rise: {
+              "0%": { opacity: "0", transform: "translateY(14px)" },
+              "100%": { opacity: "1", transform: "translateY(0)" },
             },
           },
+          animation: {
+            rise: "rise 700ms ease both",
+          },
         },
-      };
-    </script>
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <style>
-      @import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=JetBrains+Mono:wght@400;600&display=swap");
+      },
+    };
+  </script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=JetBrains+Mono:wght@400;600&display=swap");
 
-      body {
-        background:
-          radial-gradient(circle at 8% 10%, rgba(38, 232, 255, 0.16), transparent 36%),
-          radial-gradient(circle at 92% 16%, rgba(255, 73, 216, 0.18), transparent 30%),
-          radial-gradient(circle at 84% 86%, rgba(100, 84, 255, 0.22), transparent 34%),
-          linear-gradient(145deg, #05070f, #0d1022);
-      }
+    body {
+      min-height: 100vh;
+      overflow-x: hidden;
+      background:
+        linear-gradient(115deg, rgba(14, 165, 233, 0.18), transparent 28%),
+        linear-gradient(245deg, rgba(236, 72, 153, 0.2), transparent 30%),
+        linear-gradient(180deg, #020617 0%, #08111f 42%, #120a2a 100%);
+      background-attachment: fixed;
+    }
 
-      .noise {
-        position: fixed;
-        inset: 0;
-        pointer-events: none;
-        opacity: 0.25;
-        background: repeating-linear-gradient(
-          90deg,
-          rgba(255, 255, 255, 0.03) 0,
-          rgba(255, 255, 255, 0.03) 1px,
-          transparent 1px,
-          transparent 72px
-        );
-      }
+    .noise {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.2;
+      background:
+        linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+      background-size: 54px 54px;
+      -webkit-mask-image: linear-gradient(to bottom, black, transparent 82%);
+      mask-image: linear-gradient(to bottom, black, transparent 82%);
+    }
 
-      .ok {
-        color: #88ffb3;
-      }
+    .surface {
+      position: relative;
+      overflow: hidden;
+    }
 
-      .warn {
-        color: #ffd56a;
-      }
+    .surface::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      pointer-events: none;
+      background:
+        linear-gradient(135deg, rgba(34, 211, 238, 0.12), transparent 32%),
+        linear-gradient(315deg, rgba(244, 114, 182, 0.1), transparent 36%);
+    }
 
-      .bad {
-        color: #ff7d97;
+    .surface>* {
+      position: relative;
+      z-index: 1;
+    }
+
+    .ok {
+      color: #88ffb3;
+    }
+
+    .warn {
+      color: #ffd56a;
+    }
+
+    .bad {
+      color: #ff7d97;
+    }
+
+    @media (max-width: 640px) {
+      #log {
+        min-height: 220px;
+        max-height: 310px;
       }
-    </style>
-  </head>
-  <body class="text-slate-100 font-sans">
-    <div class="noise"></div>
-    <main class="relative z-10 mx-auto my-6 w-[min(1120px,calc(100%-24px))]">
-      <header class="animate-rise rounded-2xl border border-line bg-panel px-4 py-4 shadow-glow backdrop-blur md:px-5">
-        <div class="flex flex-wrap items-center justify-between gap-3">
-          <div class="flex items-center gap-2 text-sm font-extrabold tracking-wide text-slate-100">
-            <i data-lucide="layers-3" class="h-4 w-4 text-cyan-300"></i>
-            VTU Autopilot
-          </div>
-          <nav class="flex flex-wrap gap-2">
-            <a
-              class="inline-flex items-center gap-2 rounded-full border border-amber-400/40 bg-amber-300/10 px-3 py-1.5 text-xs font-bold text-amber-200 transition hover:bg-amber-300/20"
-              href="https://github.com/bgmanu2426/vtu-automate"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <i data-lucide="star" class="h-3.5 w-3.5"></i>
-              Star the repo
-            </a>
-            <a
-              class="rounded-full border border-line bg-slate-900/60 px-3 py-1.5 text-xs text-slate-200 transition hover:bg-slate-800/70"
-              href="https://lnbg.in"
-              target="_blank"
-              rel="noopener noreferrer"
-              >Website</a
-            >
-          </nav>
+    }
+  </style>
+</head>
+
+<body class="bg-night text-slate-100 font-sans">
+  <div class="noise"></div>
+  <main class="relative z-10 mx-auto w-full max-w-6xl px-3 py-4 sm:px-5 lg:px-6">
+    <header class="surface animate-rise rounded-2xl border border-white/10 bg-panel px-4 py-4 shadow-neon backdrop-blur-xl md:px-5">
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div class="flex items-center gap-2 text-sm font-extrabold tracking-wide text-slate-100">
+          <span class="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-300 via-fuchsia-300 to-amber-300 text-slate-950 shadow-lg shadow-cyan-950/30">
+            <i data-lucide="layers-3" class="h-4 w-4"></i>
+          </span>
+          VTU Automate
         </div>
-      </header>
+      </div>
+    </header>
 
-      <section class="mt-3 animate-rise rounded-2xl border border-line bg-panel p-6 shadow-glow backdrop-blur">
-        <h1 class="text-4xl font-extrabold tracking-tight text-indigo-300 md:text-6xl">VTU Autopilot</h1>
-        <p class="mt-3 max-w-3xl text-base text-slate-300 md:text-lg">
-          Enter your VTU login, paste the course link or slug, and watch real-time progress in a terminal-style stream.
-          Credentials are used only for the active run and cleared once done.
-        </p>
-        <div class="mt-5 flex flex-wrap gap-2">
-          <a
-            href="https://github.com/bgmanu2426/vtu-automate"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-amber-300 to-yellow-400 px-4 py-2 text-sm font-extrabold text-slate-900 transition hover:brightness-110"
-          >
-            <i data-lucide="star" class="h-4 w-4"></i>
-            Start the repo
-          </a>
-          <a
-            href="#process"
-            class="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-pink-500 px-4 py-2 text-sm font-bold text-white transition hover:brightness-110"
-          >
-            <i data-lucide="sparkles" class="h-4 w-4"></i>
-            See process
-          </a>
-        </div>
-      </section>
-
-      <section id="process" class="mt-3 animate-rise rounded-2xl border border-line bg-panel p-5 shadow-glow backdrop-blur">
-        <p class="text-xs font-bold uppercase tracking-[0.2em] text-cyan-300">The process</p>
-        <h2 class="mt-1 text-3xl font-extrabold">Follow the steps to see magic</h2>
-        <p class="mt-2 text-slate-300">VTU made a portal. We made a bypass.</p>
-        <div class="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-          <article class="rounded-xl border border-line bg-slate-950/40 p-4">
-            <div class="mb-3 inline-flex rounded-lg bg-cyan-500/20 p-2 text-cyan-300">
-              <i data-lucide="lock" class="h-4 w-4"></i>
-            </div>
-            <h3 class="font-bold">Enter credentials</h3>
-            <p class="mt-2 text-sm text-slate-300">Use your VTU online portal login. Same ones you use at online.vtu.ac.in.</p>
-          </article>
-          <article class="rounded-xl border border-line bg-slate-950/40 p-4">
-            <div class="mb-3 inline-flex rounded-lg bg-indigo-500/20 p-2 text-indigo-300">
-              <i data-lucide="link" class="h-4 w-4"></i>
-            </div>
-            <h3 class="font-bold">Pick your course</h3>
-            <p class="mt-2 text-sm text-slate-300">Paste the course slug from the URL. The app can also extract it from full link.</p>
-          </article>
-          <article class="rounded-xl border border-line bg-slate-950/40 p-4">
-            <div class="mb-3 inline-flex rounded-lg bg-sky-500/20 p-2 text-sky-300">
-              <i data-lucide="activity" class="h-4 w-4"></i>
-            </div>
-            <h3 class="font-bold">Watch the magic</h3>
-            <p class="mt-2 text-sm text-slate-300">Real-time progress in your browser. Queue updates and logs stream live.</p>
-          </article>
-        </div>
-      </section>
-
-      <section id="launch" class="mt-3 grid gap-3 lg:grid-cols-2">
-        <article class="animate-rise rounded-2xl border border-line bg-panel p-5 shadow-glow backdrop-blur">
-          <p class="text-xs font-bold uppercase tracking-[0.2em] text-cyan-300">Launch</p>
-          <h2 class="mt-1 text-3xl font-extrabold">Start automation</h2>
-          <p class="mt-2 text-slate-300">Credentials are wiped from memory the moment your job completes.</p>
-
-          <label for="email" class="mt-4 block text-xs font-semibold uppercase tracking-[0.14em] text-slate-300"
-            >VTU Online Email</label
-          >
-          <input
-            id="email"
-            type="email"
-            placeholder="you@example.com"
-            autocomplete="email"
-            class="mt-1 w-full rounded-xl border border-line bg-slate-950/60 px-3 py-2.5 text-slate-100 outline-none transition focus:border-cyan-300"
-          />
-
-          <label
-            for="password"
-            class="mt-3 block text-xs font-semibold uppercase tracking-[0.14em] text-slate-300"
-            >Password</label
-          >
-          <div class="relative mt-1">
-            <input
-              id="password"
-              type="password"
-              placeholder="Your VTU password"
-              autocomplete="current-password"
-              class="w-full rounded-xl border border-line bg-slate-950/60 px-3 py-2.5 pr-12 text-slate-100 outline-none transition focus:border-cyan-300"
-            />
-            <button
-              id="toggle-password"
-              type="button"
-              class="absolute right-2 top-1/2 inline-flex -translate-y-1/2 items-center justify-center rounded-md border border-line bg-slate-900/80 p-1.5 text-slate-200 transition hover:bg-slate-800"
-              aria-label="Show password"
-            >
-              <span id="eye-open" class="inline-flex">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-4 w-4">
-                  <path d="M2.06 12.34a1 1 0 0 1 0-.68C3.42 8.49 6.45 6 12 6s8.58 2.49 9.94 5.66a1 1 0 0 1 0 .68C20.58 15.51 17.55 18 12 18s-8.58-2.49-9.94-5.66z"/>
-                  <circle cx="12" cy="12" r="3"/>
-                </svg>
-              </span>
-              <span id="eye-off" class="hidden">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-4 w-4">
-                  <path d="M3 3l18 18"/>
-                  <path d="M10.58 10.59A2 2 0 0 0 12 14a2 2 0 0 0 1.41-.58"/>
-                  <path d="M9.88 5.09A10.94 10.94 0 0 1 12 5c5.05 0 8.12 2.83 9.53 6a1.7 1.7 0 0 1 0 2c-.67 1.5-1.82 3.05-3.62 4.2"/>
-                  <path d="M6.61 6.61C4.62 7.85 3.35 9.6 2.47 11a1.7 1.7 0 0 0 0 2C3.88 16.17 6.95 19 12 19a11.3 11.3 0 0 0 4.42-.82"/>
-                </svg>
-              </span>
-            </button>
-          </div>
-
-          <label for="course" class="mt-3 block text-xs font-semibold uppercase tracking-[0.14em] text-slate-300"
-            >Course Link Or Slug</label
-          >
-          <input
-            id="course"
-            type="text"
-            placeholder="https://online.vtu.ac.in/student/learning/1-fiber-optic-communication-technology"
-            class="mt-1 w-full rounded-xl border border-line bg-slate-950/60 px-3 py-2.5 text-slate-100 outline-none transition focus:border-cyan-300"
-          />
-
-          <div class="mt-4 flex flex-wrap gap-2">
-            <button
-              class="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-cyan-300 to-emerald-300 px-4 py-2 text-sm font-extrabold text-slate-900 transition hover:brightness-110"
-              id="submit"
-              type="button"
-            >
-              <i data-lucide="rocket" class="h-4 w-4"></i>
-              Start run
-            </button>
-          </div>
-          <p class="mt-3 text-sm text-cyan-200">
-            A course can take up to 20 mins to complete. Until then, sit and relax.
+    <section class="surface mt-4 animate-rise rounded-2xl border border-white/10 bg-panel p-5 shadow-neon backdrop-blur-xl sm:p-7 lg:p-8">
+      <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-center">
+        <div>
+          <p class="inline-flex items-center gap-2 rounded-full border border-cyan-300/30 bg-cyan-300/10 px-3 py-1 text-xs font-extrabold uppercase tracking-[0.18em] text-cyan-100">
+            <i data-lucide="sparkles" class="h-3.5 w-3.5"></i>
+            Course automation
           </p>
+          <h1 class="mt-4 bg-gradient-to-r from-cyan-200 via-fuchsia-200 to-amber-200 bg-clip-text text-4xl font-extrabold tracking-tight text-transparent sm:text-5xl lg:text-7xl">
+            VTU Automate
+          </h1>
+          <p class="mt-4 max-w-3xl text-base leading-7 text-slate-300 sm:text-lg">
+            Enter your VTU login, paste the course link or slug, and watch real-time progress in a terminal-style stream.
+            Credentials are used only for the active run and cleared once done.
+          </p>
+        </div>
+        <div class="rounded-2xl border border-white/10 bg-slate-950/55 p-4 shadow-glow">
+          <div class="flex items-center justify-between gap-3">
+            <span class="text-xs font-bold uppercase tracking-[0.16em] text-slate-400">Live panel</span>
+            <span class="rounded-full bg-emerald-300/15 px-2.5 py-1 text-xs font-bold text-emerald-200">Ready</span>
+          </div>
+          <div class="mt-4 grid grid-cols-2 gap-3">
+            <div class="rounded-xl border border-cyan-300/20 bg-cyan-300/10 p-3">
+              <i data-lucide="shield-check" class="h-5 w-5 text-cyan-200"></i>
+              <p class="mt-3 text-sm font-bold">Private run</p>
+            </div>
+            <div class="rounded-xl border border-fuchsia-300/20 bg-fuchsia-300/10 p-3">
+              <i data-lucide="radio" class="h-5 w-5 text-fuchsia-200"></i>
+              <p class="mt-3 text-sm font-bold">Live logs</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="mt-6 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+        <a href="https://github.com/bgmanu2426/vtu-automate" target="_blank" rel="noopener noreferrer"
+          class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-300 to-yellow-400 px-4 py-2.5 text-sm font-extrabold text-slate-950 shadow-lg shadow-amber-950/30 transition hover:brightness-110 sm:w-auto">
+          <i data-lucide="star" class="h-4 w-4"></i>
+          Star the repo
+        </a>
+        <a href="#process"
+          class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-pink-500 px-4 py-2.5 text-sm font-bold text-white shadow-lg shadow-fuchsia-950/30 transition hover:brightness-110 sm:w-auto">
+          <i data-lucide="sparkles" class="h-4 w-4"></i>
+          See process
+        </a>
+      </div>
+    </section>
 
-          <label for="track-id" class="mt-3 block text-xs font-semibold uppercase tracking-[0.14em] text-slate-300"
-            >Existing Job ID</label
-          >
-          <input
-            id="track-id"
-            type="text"
-            placeholder="Paste Job UUID to reconnect"
-            class="mt-1 w-full rounded-xl border border-line bg-slate-950/60 px-3 py-2.5 text-slate-100 outline-none transition focus:border-cyan-300"
-          />
-          <div class="mt-3">
-            <button
-              class="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-pink-500 px-4 py-2 text-sm font-bold text-white transition hover:brightness-110"
-              id="track"
-              type="button"
-            >
-              <i data-lucide="search" class="h-4 w-4"></i>
-              Track existing job
-            </button>
+    <section id="process"
+      class="surface mt-4 animate-rise rounded-2xl border border-white/10 bg-panel p-5 shadow-glow backdrop-blur-xl sm:p-6">
+      <p class="text-xs font-bold uppercase tracking-[0.2em] text-cyan-200">The process</p>
+      <h2 class="mt-1 text-2xl font-extrabold sm:text-3xl">Follow the steps to see magic</h2>
+      <p class="mt-2 text-slate-300">VTU made a portal. We made a bypass.</p>
+      <div class="mt-4 grid gap-3 md:grid-cols-3">
+        <article class="rounded-2xl border border-cyan-300/20 bg-cyan-300/10 p-4 transition hover:-translate-y-0.5 hover:border-cyan-200/40">
+          <div class="mb-3 inline-flex rounded-lg bg-cyan-500/20 p-2 text-cyan-300">
+            <i data-lucide="lock" class="h-4 w-4"></i>
           </div>
-          <div class="mt-2 flex flex-wrap items-center gap-2">
-            <p class="min-h-5 text-cyan-300" id="job-id"></p>
-            <button
-              id="copy-job-id"
-              type="button"
-              class="hidden inline-flex items-center gap-1 rounded-lg border border-cyan-400/40 bg-cyan-300/10 px-2.5 py-1 text-xs font-semibold text-cyan-200 transition hover:bg-cyan-300/20"
-            >
-              <i data-lucide="copy" class="h-3.5 w-3.5"></i>
-              Copy Job ID
-            </button>
+          <h3 class="font-bold">Enter credentials</h3>
+          <p class="mt-2 text-sm text-slate-300">Use your VTU online portal login. Same ones you use at
+            online.vtu.ac.in.</p>
+        </article>
+        <article class="rounded-2xl border border-indigo-300/20 bg-indigo-300/10 p-4 transition hover:-translate-y-0.5 hover:border-indigo-200/40">
+          <div class="mb-3 inline-flex rounded-lg bg-indigo-500/20 p-2 text-indigo-300">
+            <i data-lucide="link" class="h-4 w-4"></i>
           </div>
+          <h3 class="font-bold">Pick your course</h3>
+          <p class="mt-2 text-sm text-slate-300">Paste the course slug from the URL. The app can also extract it from
+            full link.</p>
+        </article>
+        <article class="rounded-2xl border border-pink-300/20 bg-pink-300/10 p-4 transition hover:-translate-y-0.5 hover:border-pink-200/40">
+          <div class="mb-3 inline-flex rounded-lg bg-pink-500/20 p-2 text-pink-300">
+            <i data-lucide="activity" class="h-4 w-4"></i>
+          </div>
+          <h3 class="font-bold">Watch the magic</h3>
+          <p class="mt-2 text-sm text-slate-300">Real-time progress in your browser. Queue updates and logs stream live.
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <section id="launch" class="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1.08fr)_minmax(300px,0.92fr)]">
+      <article class="surface animate-rise rounded-2xl border border-white/10 bg-panel p-5 shadow-glow backdrop-blur-xl sm:p-6">
+        <p class="text-xs font-bold uppercase tracking-[0.2em] text-emerald-200">Launch</p>
+        <h2 class="mt-1 text-2xl font-extrabold sm:text-3xl">Start automation</h2>
+        <p class="mt-2 text-slate-300">Credentials are wiped from memory the moment your job completes.</p>
+
+        <label for="email" class="mt-4 block text-xs font-semibold uppercase tracking-[0.14em] text-slate-300">VTU
+          Online Email</label>
+        <input id="email" type="email" placeholder="you@example.com" autocomplete="email"
+          class="mt-1 w-full rounded-xl border border-white/10 bg-slate-950/70 px-3 py-3 text-base text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-cyan-300 focus:ring-2 focus:ring-cyan-300/20 sm:text-sm" />
+
+        <label for="password"
+          class="mt-3 block text-xs font-semibold uppercase tracking-[0.14em] text-slate-300">Password</label>
+        <div class="relative mt-1">
+          <input id="password" type="password" placeholder="Your VTU password" autocomplete="current-password"
+            class="w-full rounded-xl border border-white/10 bg-slate-950/70 px-3 py-3 pr-12 text-base text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-cyan-300 focus:ring-2 focus:ring-cyan-300/20 sm:text-sm" />
+          <button id="toggle-password" type="button"
+            class="absolute right-2 top-1/2 inline-flex -translate-y-1/2 items-center justify-center rounded-lg border border-white/10 bg-slate-900/90 p-2 text-slate-200 transition hover:bg-slate-800"
+            aria-label="Show password">
+            <span id="eye-open" class="inline-flex">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" class="h-4 w-4">
+                <path
+                  d="M2.06 12.34a1 1 0 0 1 0-.68C3.42 8.49 6.45 6 12 6s8.58 2.49 9.94 5.66a1 1 0 0 1 0 .68C20.58 15.51 17.55 18 12 18s-8.58-2.49-9.94-5.66z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+            </span>
+            <span id="eye-off" class="hidden">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" class="h-4 w-4">
+                <path d="M3 3l18 18" />
+                <path d="M10.58 10.59A2 2 0 0 0 12 14a2 2 0 0 0 1.41-.58" />
+                <path
+                  d="M9.88 5.09A10.94 10.94 0 0 1 12 5c5.05 0 8.12 2.83 9.53 6a1.7 1.7 0 0 1 0 2c-.67 1.5-1.82 3.05-3.62 4.2" />
+                <path
+                  d="M6.61 6.61C4.62 7.85 3.35 9.6 2.47 11a1.7 1.7 0 0 0 0 2C3.88 16.17 6.95 19 12 19a11.3 11.3 0 0 0 4.42-.82" />
+              </svg>
+            </span>
+          </button>
+        </div>
+
+        <label for="course" class="mt-3 block text-xs font-semibold uppercase tracking-[0.14em] text-slate-300">Course
+          Link Or Slug</label>
+        <input id="course" type="text"
+          placeholder="https://online.vtu.ac.in/student/learning/1-fiber-optic-communication-technology"
+          class="mt-1 w-full rounded-xl border border-white/10 bg-slate-950/70 px-3 py-3 text-base text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-cyan-300 focus:ring-2 focus:ring-cyan-300/20 sm:text-sm" />
+
+        <div class="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+          <button
+            class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-300 to-emerald-300 px-4 py-3 text-sm font-extrabold text-slate-950 shadow-lg shadow-cyan-950/30 transition hover:brightness-110 sm:w-auto"
+            id="submit" type="button">
+            <i data-lucide="rocket" class="h-4 w-4"></i>
+            Start run
+          </button>
+        </div>
+        <p class="mt-3 text-sm text-cyan-200">
+          A course can take up to 20 mins to complete. Until then, sit and relax.
+        </p>
+
+        <label for="track-id"
+          class="mt-3 block text-xs font-semibold uppercase tracking-[0.14em] text-slate-300">Existing Job ID</label>
+        <input id="track-id" type="text" placeholder="Paste Job UUID to reconnect"
+          class="mt-1 w-full rounded-xl border border-white/10 bg-slate-950/70 px-3 py-3 text-base text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-cyan-300 focus:ring-2 focus:ring-cyan-300/20 sm:text-sm" />
+        <div class="mt-3">
+          <button
+            class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-pink-500 px-4 py-3 text-sm font-bold text-white shadow-lg shadow-fuchsia-950/30 transition hover:brightness-110 sm:w-auto"
+            id="track" type="button">
+            <i data-lucide="search" class="h-4 w-4"></i>
+            Track existing job
+          </button>
+        </div>
+        <div class="mt-2 flex flex-wrap items-center gap-2">
+          <p class="min-h-5 text-cyan-300" id="job-id"></p>
+          <button id="copy-job-id" type="button"
+            class="hidden inline-flex items-center gap-1 rounded-lg border border-cyan-400/40 bg-cyan-300/10 px-2.5 py-1.5 text-xs font-semibold text-cyan-200 transition hover:bg-cyan-300/20">
+            <i data-lucide="copy" class="h-3.5 w-3.5"></i>
+            Copy Job ID
+          </button>
+        </div>
+      </article>
+
+      <div class="space-y-4">
+        <article class="surface animate-rise rounded-2xl border border-white/10 bg-panel p-5 shadow-glow backdrop-blur-xl">
+          <h2 class="flex items-center gap-2 text-xl font-extrabold sm:text-2xl">
+            <i data-lucide="info" class="h-5 w-5 text-cyan-300"></i>
+            Before you launch
+          </h2>
+          <ul class="mt-4 space-y-3 text-slate-300">
+            <li class="flex items-start gap-2">
+              <i data-lucide="check" class="mt-0.5 h-4 w-4 text-emerald-300"></i>
+              <span>Use your <strong>online.vtu.ac.in</strong> login, not your university portal credentials.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i data-lucide="check" class="mt-0.5 h-4 w-4 text-emerald-300"></i>
+              <span>The course slug is extracted from full URL automatically.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i data-lucide="check" class="mt-0.5 h-4 w-4 text-emerald-300"></i>
+              <span>You will get a <strong>Job ID</strong> - save it to reconnect if you close the tab.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i data-lucide="check" class="mt-0.5 h-4 w-4 text-emerald-300"></i>
+              <span>Your password is <strong>never stored</strong> and wiped from memory on completion.</span>
+            </li>
+          </ul>
         </article>
 
-        <div class="space-y-3">
-          <article class="animate-rise rounded-2xl border border-line bg-panel p-5 shadow-glow backdrop-blur">
-            <h2 class="flex items-center gap-2 text-2xl font-extrabold">
-              <i data-lucide="info" class="h-5 w-5 text-cyan-300"></i>
-              Before you launch
-            </h2>
-            <ul class="mt-4 space-y-3 text-slate-300">
-              <li class="flex items-start gap-2">
-                <i data-lucide="check" class="mt-0.5 h-4 w-4 text-emerald-300"></i>
-                <span>Use your <strong>online.vtu.ac.in</strong> login, not your university portal credentials.</span>
-              </li>
-              <li class="flex items-start gap-2">
-                <i data-lucide="check" class="mt-0.5 h-4 w-4 text-emerald-300"></i>
-                <span>The course slug is extracted from full URL automatically.</span>
-              </li>
-              <li class="flex items-start gap-2">
-                <i data-lucide="check" class="mt-0.5 h-4 w-4 text-emerald-300"></i>
-                <span>You will get a <strong>Job ID</strong> - save it to reconnect if you close the tab.</span>
-              </li>
-              <li class="flex items-start gap-2">
-                <i data-lucide="check" class="mt-0.5 h-4 w-4 text-emerald-300"></i>
-                <span>Your password is <strong>never stored</strong> and wiped from memory on completion.</span>
-              </li>
-            </ul>
-          </article>
+        <article
+          class="surface animate-rise rounded-2xl border border-fuchsia-300/20 bg-slate-950/55 p-5 shadow-glow backdrop-blur-xl">
+          <h2 class="flex items-center gap-2 text-xl font-extrabold text-cyan-200 sm:text-2xl">
+            <i data-lucide="activity" class="h-5 w-5 text-cyan-300"></i>
+            Queue system
+          </h2>
+          <ul class="mt-4 space-y-3 text-slate-300">
+            <li class="flex items-start gap-2">
+              <i data-lucide="clock-3" class="mt-0.5 h-4 w-4 text-emerald-300"></i>
+              <span>Jobs run in order. During high traffic you will see your <strong>queue position</strong>.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i data-lucide="plug-zap" class="mt-0.5 h-4 w-4 text-emerald-300"></i>
+              <span>Close the tab anytime - your job keeps running. Come back with Job ID to check.</span>
+            </li>
+          </ul>
+        </article>
+      </div>
+    </section>
 
-          <article class="animate-rise rounded-2xl border border-cyan-400/30 bg-slate-950/50 p-5 shadow-glow backdrop-blur">
-            <h2 class="flex items-center gap-2 text-2xl font-extrabold text-cyan-200">
-              <i data-lucide="activity" class="h-5 w-5 text-cyan-300"></i>
-              Queue system
-            </h2>
-            <ul class="mt-4 space-y-3 text-slate-300">
-              <li class="flex items-start gap-2">
-                <i data-lucide="clock-3" class="mt-0.5 h-4 w-4 text-emerald-300"></i>
-                <span>Jobs run in order. During high traffic you will see your <strong>queue position</strong>.</span>
-              </li>
-              <li class="flex items-start gap-2">
-                <i data-lucide="plug-zap" class="mt-0.5 h-4 w-4 text-emerald-300"></i>
-                <span>Close the tab anytime - your job keeps running. Come back with Job ID to check.</span>
-              </li>
-            </ul>
-          </article>
+    <section id="status" class="surface mt-4 animate-rise rounded-2xl border border-white/10 bg-panel p-5 shadow-glow backdrop-blur-xl sm:p-6">
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <h2 class="flex items-center gap-2 text-xl font-extrabold sm:text-2xl">
+          <span class="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-300 to-fuchsia-400 text-slate-950">
+            <i data-lucide="activity" class="h-4 w-4"></i>
+          </span>
+          Automate active
+        </h2>
+        <span class="self-start rounded-full border border-white/10 bg-slate-950/80 px-3 py-1.5 text-xs font-bold text-slate-200 sm:self-auto" id="status-note">Realtime stream
+          standby</span>
+      </div>
+
+      <div class="mt-3">
+        <div class="h-3 w-full overflow-hidden rounded-full border border-white/10 bg-slate-950/80">
+          <div class="h-full w-0 bg-gradient-to-r from-cyan-300 via-fuchsia-400 to-amber-300 transition-all duration-300" id="bar"></div>
         </div>
-      </section>
+      </div>
 
-      <section class="mt-3 animate-rise rounded-2xl border border-line bg-panel p-5 shadow-glow backdrop-blur">
-        <div class="flex flex-wrap items-center justify-between gap-2">
-          <h2 class="text-2xl font-extrabold">Autopilot active</h2>
-          <span class="rounded-full border border-line bg-slate-950/80 px-3 py-1 text-xs" id="status-note"
-            >Realtime stream standby</span
-          >
-        </div>
+      <div class="mt-3 grid gap-2 sm:grid-cols-3">
+        <span class="rounded-xl border border-cyan-300/20 bg-cyan-300/10 px-3 py-2 text-xs font-bold text-cyan-100" id="state">State: idle</span>
+        <span class="rounded-xl border border-fuchsia-300/20 bg-fuchsia-300/10 px-3 py-2 text-xs font-bold text-fuchsia-100" id="queue">Queue: 0</span>
+        <span class="rounded-xl border border-amber-300/20 bg-amber-300/10 px-3 py-2 text-xs font-bold text-amber-100" id="processed">Processed:
+          0/0</span>
+      </div>
 
-        <div class="mt-3">
-          <div class="h-3 w-full overflow-hidden rounded-full border border-line bg-slate-950/80">
-            <div class="h-full w-0 bg-gradient-to-r from-cyan-300 to-pink-400 transition-all duration-300" id="bar"></div>
+      <div id="queue-panel" class="mt-3 hidden rounded-2xl border border-fuchsia-300/30 bg-gradient-to-r from-fuchsia-500/15 via-violet-500/10 to-cyan-500/15 p-4">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div class="flex items-center gap-3">
+            <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-fuchsia-300/20 text-fuchsia-100">
+              <i data-lucide="clock-3" class="h-5 w-5"></i>
+            </span>
+            <div>
+              <p class="text-xs font-bold uppercase tracking-[0.16em] text-fuchsia-100">Waiting in queue</p>
+              <p class="mt-1 text-sm text-slate-300" id="queue-message">Your job will start automatically.</p>
+            </div>
+          </div>
+          <div class="rounded-xl border border-white/10 bg-slate-950/70 px-4 py-3 text-center">
+            <p class="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">Current number</p>
+            <p class="text-3xl font-extrabold text-fuchsia-100" id="queue-number">#0</p>
           </div>
         </div>
+      </div>
 
-        <div class="mt-3 flex flex-wrap gap-2">
-          <span class="rounded-full border border-line bg-slate-950/80 px-3 py-1 text-xs" id="state">State: idle</span>
-          <span class="rounded-full border border-line bg-slate-950/80 px-3 py-1 text-xs" id="queue">Queue: 0</span>
-          <span class="rounded-full border border-line bg-slate-950/80 px-3 py-1 text-xs" id="processed"
-            >Processed: 0/0</span
-          >
-        </div>
+      <div
+        class="mt-3 min-h-[240px] max-h-[390px] overflow-auto rounded-xl border border-white/10 bg-slate-950/90 p-3 font-mono text-[0.78rem] leading-6 shadow-inner sm:text-[0.82rem]"
+        id="log"></div>
+    </section>
 
-        <div
-          class="mt-3 min-h-[240px] max-h-[390px] overflow-auto rounded-xl border border-line bg-slate-950/90 p-3 font-mono text-[0.82rem] leading-6"
-          id="log"
-        ></div>
-      </section>
+    <section id="congrats-card"
+      class="surface mt-4 hidden animate-rise rounded-2xl border border-emerald-400/35 bg-emerald-500/10 p-5 shadow-glow backdrop-blur-xl">
+      <h3 class="flex items-center gap-2 text-xl font-extrabold text-emerald-200 sm:text-2xl">
+        <i data-lucide="party-popper" class="h-5 w-5"></i>
+        Congratulations!
+      </h3>
+      <p class="mt-2 text-emerald-100">All of your videos are marked completed and you are good to go.</p>
+      <button id="submit-another" type="button"
+        class="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-300 to-cyan-300 px-4 py-3 text-sm font-bold text-slate-950 transition hover:brightness-110 sm:w-auto">
+        <i data-lucide="rotate-ccw" class="h-4 w-4"></i>
+        Submit another course
+      </button>
+    </section>
 
-      <section id="congrats-card" class="mt-3 hidden animate-rise rounded-2xl border border-emerald-400/35 bg-emerald-500/10 p-5 shadow-glow backdrop-blur">
-        <h3 class="flex items-center gap-2 text-2xl font-extrabold text-emerald-200">
-          <i data-lucide="party-popper" class="h-5 w-5"></i>
-          Congratulations!
-        </h3>
-        <p class="mt-2 text-emerald-100">All of your videos are marked completed and you are good to go.</p>
-        <button
-          id="submit-another"
-          type="button"
-          class="mt-4 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-300 to-cyan-300 px-4 py-2 text-sm font-bold text-slate-900 transition hover:brightness-110"
-        >
-          <i data-lucide="rotate-ccw" class="h-4 w-4"></i>
-          Submit another course
-        </button>
-      </section>
-
-      <footer class="mt-3 animate-rise rounded-2xl border border-line bg-panel px-5 py-4 shadow-glow backdrop-blur">
-        <div>
-          Website: <a href="https://lnbg.in" target="_blank" rel="noopener noreferrer">https://lnbg.in</a>
-          | GitHub:
+    <footer class="surface mt-4 animate-rise rounded-2xl border border-white/10 bg-panel px-4 py-4 shadow-glow backdrop-blur-xl sm:px-5">
+      <div class="flex flex-col gap-4 text-sm text-slate-300 lg:flex-row lg:items-center lg:justify-between">
+        <div class="grid gap-2 sm:flex sm:flex-wrap sm:items-center sm:gap-3">
+          <a href="https://lnbg.in" target="_blank" rel="noopener noreferrer"
+            class="inline-flex max-w-full items-center justify-center gap-2 rounded-xl border border-white/10 bg-slate-950/60 px-3 py-2.5 font-semibold text-slate-100 transition hover:border-cyan-300/50 hover:text-cyan-200 sm:justify-start">
+            <i data-lucide="globe-2" class="h-4 w-4 text-cyan-300"></i>
+            <span class="break-all">Website</span>
+            <i data-lucide="external-link" class="h-3.5 w-3.5 text-slate-500"></i>
+          </a>
+          <a href="https://github.com/bgmanu2426" target="_blank" rel="noopener noreferrer"
+            class="inline-flex max-w-full items-center justify-center gap-2 rounded-xl border border-white/10 bg-slate-950/60 px-3 py-2.5 font-semibold text-slate-100 transition hover:border-cyan-300/50 hover:text-cyan-200 sm:justify-start">
+            <i data-lucide="github" class="h-4 w-4 text-cyan-300"></i>
+            <span class="break-all">GitHub</span>
+            <i data-lucide="external-link" class="h-3.5 w-3.5 text-slate-500"></i>
+          </a>
           <a href="https://github.com/bgmanu2426/vtu-automate" target="_blank" rel="noopener noreferrer"
-            >https://github.com/bgmanu2426/vtu-automate</a
-          >
+            class="inline-flex items-center justify-center gap-2 rounded-xl border border-amber-300/30 bg-amber-300/10 px-3 py-2.5 font-bold text-amber-100 transition hover:border-amber-200/70 hover:bg-amber-300/15 sm:justify-start">
+            <i data-lucide="github" class="h-4 w-4 text-amber-100"></i>
+            <i data-lucide="star" class="h-4 w-4 fill-amber-300 text-amber-300"></i>
+            <span>Star repo</span>
+            <i data-lucide="external-link" class="h-3.5 w-3.5 text-slate-500"></i>
+          </a>
         </div>
-        <div style="margin-top: 6px">Made with love by bgmanu2426</div>
-      </footer>
-    </main>
+        <div class="inline-flex items-center justify-center gap-2 font-semibold text-slate-100 lg:justify-end">
+          <span>Made with</span>
+          <i data-lucide="heart" class="h-4 w-4 fill-rose-400 text-rose-400"></i>
+          <span>by Lakshminarayana</span>
+        </div>
+      </div>
+    </footer>
+  </main>
 
-    <script>
-      const logEl = document.getElementById("log");
-      const stateEl = document.getElementById("state");
-      const queueEl = document.getElementById("queue");
-      const processedEl = document.getElementById("processed");
-      const statusNoteEl = document.getElementById("status-note");
-      const submitBtn = document.getElementById("submit");
-      const jobIdEl = document.getElementById("job-id");
-      const copyJobBtn = document.getElementById("copy-job-id");
-      const passwordInput = document.getElementById("password");
-      const togglePasswordBtn = document.getElementById("toggle-password");
-      const eyeOpen = document.getElementById("eye-open");
-      const eyeOff = document.getElementById("eye-off");
-      const congratsCard = document.getElementById("congrats-card");
-      const submitAnotherBtn = document.getElementById("submit-another");
-      const barEl = document.getElementById("bar");
+  <script>
+    const logEl = document.getElementById("log");
+    const stateEl = document.getElementById("state");
+    const queueEl = document.getElementById("queue");
+    const queuePanelEl = document.getElementById("queue-panel");
+    const queueNumberEl = document.getElementById("queue-number");
+    const queueMessageEl = document.getElementById("queue-message");
+    const processedEl = document.getElementById("processed");
+    const statusNoteEl = document.getElementById("status-note");
+    const submitBtn = document.getElementById("submit");
+    const jobIdEl = document.getElementById("job-id");
+    const copyJobBtn = document.getElementById("copy-job-id");
+    const passwordInput = document.getElementById("password");
+    const togglePasswordBtn = document.getElementById("toggle-password");
+    const eyeOpen = document.getElementById("eye-open");
+    const eyeOff = document.getElementById("eye-off");
+    const congratsCard = document.getElementById("congrats-card");
+    const submitAnotherBtn = document.getElementById("submit-another");
+    const barEl = document.getElementById("bar");
 
-      let stream = null;
+    let stream = null;
 
-      function line(text, cls = "") {
-        const div = document.createElement("div");
-        if (cls) div.className = cls;
-        div.textContent = `[${new Date().toLocaleTimeString()}] ${text}`;
-        logEl.appendChild(div);
-        logEl.scrollTop = logEl.scrollHeight;
+    function line(text, cls = "") {
+      const div = document.createElement("div");
+      if (cls) div.className = cls;
+      div.textContent = `[${new Date().toLocaleTimeString()}] ${text}`;
+      logEl.appendChild(div);
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    function setProgress(value) {
+      const p = Math.max(0, Math.min(100, Number(value) || 0));
+      barEl.style.width = `${p}%`;
+    }
+
+    function updateStatusBadge(text, cls = "") {
+      statusNoteEl.textContent = text;
+      statusNoteEl.className = "self-start rounded-full border border-white/10 bg-slate-950/80 px-3 py-1.5 text-xs font-bold text-slate-200 sm:self-auto";
+      if (cls) statusNoteEl.classList.add(cls);
+    }
+
+    function updateQueueDisplay(status, position = 0) {
+      const currentPosition = Math.max(0, Number(position) || 0);
+      const isQueued = status === "queued" && currentPosition > 0;
+
+      if (isQueued) {
+        const jobsAhead = currentPosition - 1;
+        queueEl.textContent = `Queue: #${currentPosition}`;
+        queueNumberEl.textContent = `#${currentPosition}`;
+        queueMessageEl.textContent =
+          jobsAhead === 0
+            ? "You are next. Your job will start automatically."
+            : `There ${jobsAhead === 1 ? "is" : "are"} ${jobsAhead} ${jobsAhead === 1 ? "job" : "jobs"} ahead of you.`;
+        queuePanelEl.classList.remove("hidden");
+        updateStatusBadge(`Waiting in queue (#${currentPosition})`, "warn");
+        return;
       }
 
-      function setProgress(value) {
-        const p = Math.max(0, Math.min(100, Number(value) || 0));
-        barEl.style.width = `${p}%`;
-      }
-
-      function updateStatusBadge(text, cls = "") {
-        statusNoteEl.textContent = text;
-        statusNoteEl.className = "rounded-full border border-line bg-slate-950/80 px-3 py-1 text-xs";
-        if (cls) statusNoteEl.classList.add(cls);
-      }
-
-      function showCongrats(show) {
-        congratsCard.classList.toggle("hidden", !show);
-      }
-
-      function setJobId(jobId) {
-        if (!jobId) {
-          jobIdEl.textContent = "";
-          copyJobBtn.classList.add("hidden");
-          copyJobBtn.dataset.jobId = "";
-          return;
-        }
-        jobIdEl.textContent = `Job ID: ${jobId}`;
-        copyJobBtn.classList.remove("hidden");
-        copyJobBtn.dataset.jobId = jobId;
-      }
-
-      function openStream(jobId) {
-        if (stream) stream.close();
-        let expectClose = false;
-        showCongrats(false);
-
-        updateStatusBadge("Connecting...", "warn");
-        line(`Connecting to ${jobId}...`, "warn");
-        stream = new EventSource(`/api/status/${jobId}`);
-
-        stream.addEventListener("open", () => updateStatusBadge("Realtime stream connected", "ok"));
-
-        stream.addEventListener("snapshot", (evt) => {
-          const data = JSON.parse(evt.data);
-          stateEl.textContent = `State: ${data.status}`;
-          queueEl.textContent = `Queue: ${data.position || 0}`;
-          processedEl.textContent = `Processed: ${data.processed || 0}/${data.total || 0}`;
-          setProgress(data.progress || 0);
-          line(`Snapshot loaded (${data.status})`, "warn");
-
-          if (data.status === "done" || data.status === "failed") {
-            expectClose = true;
-            updateStatusBadge(data.status === "done" ? "Completed" : "Failed", data.status === "done" ? "ok" : "bad");
-            showCongrats(data.status === "done" && !!(data.result && data.result.success));
-          }
-
-          for (const entry of data.logs || []) {
-            const type = entry.type;
-            const body = entry.data || {};
-            if (type === "log") line(body.text || "log");
-            if (type === "phase") line(body.message || "phase", "warn");
-          }
-
-          if (expectClose && stream) {
-            stream.close();
-          }
-        });
-
-        stream.addEventListener("status", (evt) => {
-          const data = JSON.parse(evt.data);
-          stateEl.textContent = `State: ${data.status}`;
-          line(`Status changed to ${data.status}`, "warn");
-        });
-
-        stream.addEventListener("queue_pos", (evt) => {
-          const data = JSON.parse(evt.data);
-          queueEl.textContent = `Queue: ${data.position}`;
-          line(`Queue position: ${data.position}`, "warn");
-        });
-
-        stream.addEventListener("phase", (evt) => {
-          const data = JSON.parse(evt.data);
-          line(data.message || "phase", "warn");
-        });
-
-        stream.addEventListener("log", (evt) => {
-          const data = JSON.parse(evt.data);
-          line(data.text || "log", data.level === "success" ? "ok" : "");
-        });
-
-        stream.addEventListener("course_info", (evt) => {
-          const data = JSON.parse(evt.data);
-          processedEl.textContent = `Processed: 0/${data.total || 0}`;
-          line(`Course: ${data.title} (${data.total} lectures)`, "warn");
-        });
-
-        stream.addEventListener("lecture_done", (evt) => {
-          const data = JSON.parse(evt.data);
-          processedEl.textContent = `Processed: ${data.completed || 0}/${data.total || 0}`;
-          if (data.total) {
-            setProgress(Math.round(((data.completed || 0) / data.total) * 100));
-          }
-          const suffix = data.reason ? ` - ${data.reason}` : "";
-          const cls = data.status === "done" ? "ok" : data.status === "maxed" ? "bad" : "warn";
-          line(`${data.idx}/${data.total} ${data.title} -> ${data.status}${suffix}`, cls);
-        });
-
-        stream.addEventListener("done", (evt) => {
-          const data = JSON.parse(evt.data);
-          expectClose = true;
-          stateEl.textContent = "State: done";
-          setProgress(100);
-          updateStatusBadge("Completed", "ok");
-          line(`Completed ${data.completed}, skipped ${data.skipped}, total ${data.total}`, "ok");
-          showCongrats(true);
-          stream.close();
-        });
-
-        stream.addEventListener("failed", (evt) => {
-          const data = JSON.parse(evt.data);
-          expectClose = true;
-          stateEl.textContent = "State: failed";
-          updateStatusBadge("Failed", "bad");
-          line(data.message || "Job failed", "bad");
-          showCongrats(false);
-          stream.close();
-        });
-
-        stream.onerror = () => {
-          if (expectClose) {
-            if (stream) stream.close();
-            return;
-          }
-          updateStatusBadge("Disconnected", "bad");
-          line("Connection closed or failed. Reconnect with Job ID.", "bad");
-          if (stream) stream.close();
-        };
-      }
-
-      document.getElementById("submit").addEventListener("click", async () => {
-        const email = document.getElementById("email").value.trim();
-        const password = document.getElementById("password").value;
-        const courseSlug = document.getElementById("course").value.trim();
-
-        try {
-          const res = await fetch("/api/submit", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email, password, courseSlug }),
-          });
-          const data = await res.json();
-          if (!res.ok) {
-            line(data.detail || data.error || "Could not submit job", "bad");
-            return;
-          }
-
-          setJobId(data.jobId);
-          document.getElementById("track-id").value = data.jobId;
-          line(data.existing ? "Attached to existing active job" : "Job submitted", "ok");
-          openStream(data.jobId);
-        } catch (err) {
-          line(`Submit error: ${err.message}`, "bad");
-        }
-      });
-
-      document.getElementById("track").addEventListener("click", () => {
-        const jobId = document.getElementById("track-id").value.trim();
-        if (!jobId) {
-          line("Paste a job ID first.", "bad");
-          return;
-        }
-        setJobId(jobId);
-        openStream(jobId);
-      });
-
-      togglePasswordBtn.addEventListener("click", () => {
-        const showing = passwordInput.type === "text";
-        passwordInput.type = showing ? "password" : "text";
-        eyeOpen.classList.toggle("hidden", !showing);
-        eyeOff.classList.toggle("hidden", showing);
-        togglePasswordBtn.setAttribute("aria-label", showing ? "Show password" : "Hide password");
-      });
-
-      copyJobBtn.addEventListener("click", async () => {
-        const jobId = copyJobBtn.dataset.jobId || "";
-        if (!jobId) {
-          line("No Job ID to copy yet.", "warn");
-          return;
-        }
-        try {
-          await navigator.clipboard.writeText(jobId);
-          line("Job ID copied to clipboard.", "ok");
-        } catch {
-          line("Could not copy Job ID automatically. Please copy it manually.", "warn");
-        }
-      });
-
-      submitAnotherBtn.addEventListener("click", () => {
-        if (stream) {
-          stream.close();
-          stream = null;
-        }
-
-        document.getElementById("course").value = "";
-        document.getElementById("track-id").value = "";
-        setJobId("");
-        showCongrats(false);
-        setProgress(0);
-        stateEl.textContent = "State: idle";
+      queuePanelEl.classList.add("hidden");
+      if (status === "processing") {
+        queueEl.textContent = "Queue: processing now";
+      } else if (status === "done" || status === "failed") {
+        queueEl.textContent = status === "done" ? "Queue: completed" : "Queue: finished";
+      } else {
         queueEl.textContent = "Queue: 0";
-        processedEl.textContent = "Processed: 0/0";
-        updateStatusBadge("Realtime stream standby");
-        line("Ready for next course. Enter details and click Start run.", "ok");
-        document.getElementById("course").focus();
+      }
+    }
+
+    function showCongrats(show) {
+      congratsCard.classList.toggle("hidden", !show);
+    }
+
+    function setJobId(jobId) {
+      if (!jobId) {
+        jobIdEl.textContent = "";
+        copyJobBtn.classList.add("hidden");
+        copyJobBtn.dataset.jobId = "";
+        return;
+      }
+      jobIdEl.textContent = `Job ID: ${jobId}`;
+      copyJobBtn.classList.remove("hidden");
+      copyJobBtn.dataset.jobId = jobId;
+    }
+
+    // Shared renderers so a replayed snapshot entry and its live event produce
+    // an identical log line.
+    function renderPhase(d) {
+      line(d.message || "phase", "warn");
+    }
+
+    function renderLog(d) {
+      line(d.text || "log", d.level === "success" ? "ok" : "");
+    }
+
+    function renderCourseInfo(d) {
+      processedEl.textContent = `Processed: 0/${d.total || 0}`;
+      line(`Course: ${d.title} (${d.total} lectures)`, "warn");
+    }
+
+    function renderLectureDone(d) {
+      processedEl.textContent = `Processed: ${d.completed || 0}/${d.total || 0}`;
+      if (d.total) {
+        setProgress(Math.round(((d.completed || 0) / d.total) * 100));
+      }
+      const suffix = d.reason ? ` - ${d.reason}` : "";
+      const cls = d.status === "done" ? "ok" : d.status === "maxed" ? "bad" : "warn";
+      line(`${d.idx}/${d.total} ${d.title} -> ${d.status}${suffix}`, cls);
+    }
+
+    function replayLogEntry(entry) {
+      const body = entry.data || {};
+      if (entry.type === "phase") renderPhase(body);
+      else if (entry.type === "log") renderLog(body);
+      else if (entry.type === "course_info") renderCourseInfo(body);
+      else if (entry.type === "lecture_done") renderLectureDone(body);
+    }
+
+    function openStream(jobId) {
+      if (stream) stream.close();
+      let expectClose = false;
+      showCongrats(false);
+
+      updateStatusBadge("Connecting...", "warn");
+      line(`Connecting to ${jobId}...`, "warn");
+      stream = new EventSource(`/api/status/${jobId}`);
+
+      stream.addEventListener("open", () => updateStatusBadge("Realtime stream connected", "ok"));
+
+      stream.addEventListener("snapshot", (evt) => {
+        const data = JSON.parse(evt.data);
+
+        // Rebuild the panel from the authoritative job history so nothing is
+        // missed whether we connected early, late, or are reconnecting by ID.
+        logEl.innerHTML = "";
+        stateEl.textContent = `State: ${data.status}`;
+        updateQueueDisplay(data.status, data.position || 0);
+        processedEl.textContent = `Processed: ${data.processed || 0}/${data.total || 0}`;
+        setProgress(data.progress || 0);
+
+        for (const entry of data.logs || []) {
+          replayLogEntry(entry);
+        }
+
+        if (data.status === "done" || data.status === "failed") {
+          expectClose = true;
+          updateStatusBadge(data.status === "done" ? "Completed" : "Failed", data.status === "done" ? "ok" : "bad");
+          setProgress(data.status === "done" ? 100 : data.progress || 0);
+          showCongrats(data.status === "done" && !!(data.result && data.result.success));
+        }
+
+        if (expectClose && stream) {
+          stream.close();
+        }
       });
 
-      async function loadNotification() {
-        try {
-          const response = await fetch("/api/notification");
-          if (!response.ok) return;
+      stream.addEventListener("status", (evt) => {
+        const data = JSON.parse(evt.data);
+        stateEl.textContent = `State: ${data.status}`;
+        updateQueueDisplay(data.status, data.position || 0);
+        line(`Status changed to ${data.status}`, "warn");
+      });
 
-          const note = await response.json();
-          if (note.message) {
-            line(note.message, "warn");
-          }
+      stream.addEventListener("queue_pos", (evt) => {
+        const data = JSON.parse(evt.data);
+        updateQueueDisplay(Number(data.position) > 0 ? "queued" : "processing", data.position);
+        line(`Queue position: ${data.position}`, "warn");
+      });
 
-          if (note.disabled) {
-            submitBtn.disabled = true;
-            submitBtn.style.opacity = "0.6";
-            submitBtn.style.cursor = "not-allowed";
-            updateStatusBadge("Submissions temporarily disabled", "warn");
-          }
-        } catch {
-          line("Could not load notification metadata.", "warn");
+      stream.addEventListener("phase", (evt) => renderPhase(JSON.parse(evt.data)));
+
+      stream.addEventListener("log", (evt) => renderLog(JSON.parse(evt.data)));
+
+      stream.addEventListener("course_info", (evt) => renderCourseInfo(JSON.parse(evt.data)));
+
+      stream.addEventListener("lecture_done", (evt) => renderLectureDone(JSON.parse(evt.data)));
+
+      stream.addEventListener("done", (evt) => {
+        const data = JSON.parse(evt.data);
+        expectClose = true;
+        stateEl.textContent = "State: done";
+        updateQueueDisplay("done", 0);
+        setProgress(100);
+        updateStatusBadge("Completed", "ok");
+        line(`Completed ${data.completed}, skipped ${data.skipped}, total ${data.total}`, "ok");
+        showCongrats(true);
+        stream.close();
+      });
+
+      stream.addEventListener("failed", (evt) => {
+        const data = JSON.parse(evt.data);
+        expectClose = true;
+        stateEl.textContent = "State: failed";
+        updateQueueDisplay("failed", 0);
+        updateStatusBadge("Failed", "bad");
+        line(data.message || "Job failed", "bad");
+        showCongrats(false);
+        stream.close();
+      });
+
+      stream.onerror = () => {
+        if (expectClose) {
+          if (stream) stream.close();
+          return;
         }
+        updateStatusBadge("Disconnected", "bad");
+        line("Connection closed or failed. Reconnect with Job ID.", "bad");
+        if (stream) stream.close();
+      };
+    }
+
+    document.getElementById("submit").addEventListener("click", async () => {
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
+      const courseSlug = document.getElementById("course").value.trim();
+
+      try {
+        const res = await fetch("/api/submit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password, courseSlug }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          line(data.detail || data.error || "Could not submit job", "bad");
+          return;
+        }
+
+        setJobId(data.jobId);
+        updateQueueDisplay(data.status || "queued", data.position || 0);
+        document.getElementById("track-id").value = data.jobId;
+        line(data.existing ? "Attached to existing active job" : "Job submitted", "ok");
+        openStream(data.jobId);
+      } catch (err) {
+        line(`Submit error: ${err.message}`, "bad");
+      }
+    });
+
+    document.getElementById("track").addEventListener("click", () => {
+      const jobId = document.getElementById("track-id").value.trim();
+      if (!jobId) {
+        line("Paste a job ID first.", "bad");
+        return;
+      }
+      setJobId(jobId);
+      openStream(jobId);
+    });
+
+    togglePasswordBtn.addEventListener("click", () => {
+      const showing = passwordInput.type === "text";
+      passwordInput.type = showing ? "password" : "text";
+      eyeOpen.classList.toggle("hidden", !showing);
+      eyeOff.classList.toggle("hidden", showing);
+      togglePasswordBtn.setAttribute("aria-label", showing ? "Show password" : "Hide password");
+    });
+
+    copyJobBtn.addEventListener("click", async () => {
+      const jobId = copyJobBtn.dataset.jobId || "";
+      if (!jobId) {
+        line("No Job ID to copy yet.", "warn");
+        return;
+      }
+      try {
+        await navigator.clipboard.writeText(jobId);
+        line("Job ID copied to clipboard.", "ok");
+      } catch {
+        line("Could not copy Job ID automatically. Please copy it manually.", "warn");
+      }
+    });
+
+    submitAnotherBtn.addEventListener("click", () => {
+      if (stream) {
+        stream.close();
+        stream = null;
       }
 
-      line("UI ready. Submit a job to begin.", "warn");
-      loadNotification();
-      lucide.createIcons();
-    </script>
-  </body>
+      document.getElementById("course").value = "";
+      document.getElementById("track-id").value = "";
+      setJobId("");
+      showCongrats(false);
+      setProgress(0);
+      stateEl.textContent = "State: idle";
+      updateQueueDisplay("idle", 0);
+      processedEl.textContent = "Processed: 0/0";
+      updateStatusBadge("Realtime stream standby");
+      line("Ready for next course. Enter details and click Start run.", "ok");
+      document.getElementById("course").focus();
+    });
+
+    async function loadNotification() {
+      try {
+        const response = await fetch("/api/notification");
+        if (!response.ok) return;
+
+        const note = await response.json();
+        if (note.message) {
+          line(note.message, "warn");
+        }
+
+        if (note.disabled) {
+          submitBtn.disabled = true;
+          submitBtn.style.opacity = "0.6";
+          submitBtn.style.cursor = "not-allowed";
+          updateStatusBadge("Submissions temporarily disabled", "warn");
+        }
+      } catch {
+        line("Could not load notification metadata.", "warn");
+      }
+    }
+
+    line("UI ready. Submit a job to begin.", "warn");
+    loadNotification();
+    lucide.createIcons();
+  </script>
+</body>
+
 </html>

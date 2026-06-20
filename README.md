@@ -1,6 +1,6 @@
-# VTU Autopilot (FastAPI)
+# VTU Automate (FastAPI)
 
-This is a FastAPI-based VTU autopilot service and dashboard.
+This is a FastAPI-based VTU Automate service and dashboard.
 
 ## Why this application is built
 
@@ -19,8 +19,8 @@ Main goals:
 - Dedup for active jobs using `email + courseSlug`
 - Real-time event stream (SSE)
 - Optional Upstash Redis-backed stats (`/api/stats`) with in-memory fallback
-- Admin config + monitor + notification routes (password protected)
 - Submit rate limiting (5 submissions per 15 minutes per IP)
+- SEO ready: meta/OpenGraph/Twitter tags, JSON-LD, `robots.txt`, `sitemap.xml`, and a 1200x630 share banner
 - Dark vibrant frontend with responsive design
 - Accepts either:
   - `1-fiber-optic-communication-technology`
@@ -52,6 +52,7 @@ VTU_BATCH_SIZE=10
 VTU_MAX_ATTEMPTS=100
 MAX_CONCURRENT=2
 CORS_ORIGIN=*
+SITE_URL=https://vtu-automate.fastapicloud.dev
 GITHUB_URL=https://github.com/vikas-bhat-d/vtu-course-automation
 KV_REST_API_URL=https://your-db.upstash.io
 KV_REST_API_TOKEN=your-rest-api-token
@@ -60,7 +61,7 @@ KV_REST_API_TOKEN=your-rest-api-token
 Run server:
 
 ```bash
-uv run uvicorn main:app --host 127.0.0.1 --port 8000 --reload
+uv run python -m uvicorn main:app --host 127.0.0.1 --port 8000 --reload
 ```
 
 Open:
@@ -100,7 +101,7 @@ If you provide only slug, it is used directly.
    - `snapshot`, `status`, `queue_pos`, `phase`, `log`, `course_info`, `lecture_done`, `done`, `failed`
 6. Expire completed/failed jobs after 1 hour.
 
-## 5) API parity with vtu-autopilot
+## 5) API parity with vtu-automate
 
 - `POST /api/submit` and `POST /api/jobs` accept:
   - `email`, `password`, `courseSlug`
@@ -112,15 +113,15 @@ If you provide only slug, it is used directly.
 - `GET /api/queue` queue depth
 - `GET /api/notification` public banner state
 
-Admin routes (require `ADMIN_PASSWORD` query param):
-
-- `GET /api/admin/config?password=...&batchSize=...`
-- `GET /api/admin/monitor?password=...`
-- `GET /api/admin/notification?password=...&message=...&disabled=true`
-
 ## 6) Notes
 
 - Job state is in-memory and resets on server restart.
 - Credentials are cleared from job config after run.
 - Upstash Redis is optional and used for shared public counters.
 - Missing `VTU_API_BASE_URL` causes a clear failure message.
+- `SITE_URL` drives the absolute links in `robots.txt` and `sitemap.xml`. The
+  canonical/OG/Twitter URLs in `frontend/index.html` are hardcoded to the same
+  domain — update both if you deploy elsewhere.
+- Regenerate the share banner after a branding change with
+  `uv run --with pillow python scripts/generate_og_image.py` (Pillow is only
+  needed for this one-off script, not at runtime).
